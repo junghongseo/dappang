@@ -1,6 +1,7 @@
 import { Sidebar } from "@/components/layout/Sidebar";
 import { SummaryCard, SummaryData } from "@/components/dashboard/SummaryCard";
 import { fetchAiSummaries } from "@/app/actions/dashboard";
+import { RealtimeSubscriber } from "@/components/dashboard/RealtimeSubscriber";
 
 export default async function DashboardPage() {
   const summariesData = await fetchAiSummaries();
@@ -46,18 +47,11 @@ export default async function DashboardPage() {
       <Sidebar />
       <section className="lg:col-span-8 space-y-6">
         <div className="flex justify-between items-center mb-2">
-          <h2 className="font-display text-2xl font-bold text-primary dark:text-amber-500">
+          <h2 className="font-display text-2xl font-bold text-primary dark:text-amber-500 flex items-center gap-2">
             최신 AI 요약 정보
+            <RealtimeSubscriber />
           </h2>
-          <div className="flex gap-2">
-            <button className="text-sm px-3 py-1.5 rounded-lg bg-white dark:bg-surface-dark border border-stone-200 dark:border-stone-700 shadow-sm hover:bg-stone-50 transition dark:hover:bg-stone-700">
-              필터
-            </button>
-            <button className="text-sm px-3 py-1.5 rounded-lg bg-white dark:bg-surface-dark border border-stone-200 dark:border-stone-700 shadow-sm hover:bg-stone-50 transition dark:hover:bg-stone-700 flex items-center gap-1">
-              <span className="material-symbols-outlined text-sm">refresh</span>{" "}
-              새로고침
-            </button>
-          </div>
+
         </div>
 
         {parsedSummaries.map((summary) => (

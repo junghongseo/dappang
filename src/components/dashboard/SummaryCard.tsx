@@ -107,6 +107,19 @@ export function SummaryCard({ data }: { data: SummaryData }) {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                     {data.blocks.map((block, idx) => {
                         const style = getBlockStyle(block.type);
+
+                        const formatLinksToIcons = (text: string) => {
+                            if (!text) return "";
+                            const urlRegex = /\[?(https?:\/\/[^\s\]\)]+)\]?/g;
+                            return text.replace(urlRegex, (match, url) => {
+                                const cleanUrl = url.replace(/^[\[\(]/, '').replace(/[\]\)]$/, '');
+                                return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-300 transition-colors mx-1 align-middle bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 rounded px-1.5 py-0.5 border border-stone-200 dark:border-stone-700" title="해당 링크 열기">
+                                    <span class="material-symbols-outlined text-[14px]">link</span>
+                                    <span class="text-[11px] font-bold ml-0.5">링크</span>
+                                </a>`;
+                            });
+                        };
+
                         return (
                             <div
                                 key={idx}
@@ -125,14 +138,15 @@ export function SummaryCard({ data }: { data: SummaryData }) {
                                         {block.items.map((item, i) => (
                                             <li
                                                 key={i}
-                                                dangerouslySetInnerHTML={{ __html: item }}
+                                                dangerouslySetInnerHTML={{ __html: formatLinksToIcons(item) }}
                                             />
                                         ))}
                                     </ul>
                                 ) : (
-                                    <p className="text-sm text-stone-700 dark:text-stone-300">
-                                        {block.text}
-                                    </p>
+                                    <p
+                                        className="text-sm text-stone-700 dark:text-stone-300"
+                                        dangerouslySetInnerHTML={{ __html: block.text ? formatLinksToIcons(block.text) : "" }}
+                                    />
                                 )}
                             </div>
                         );

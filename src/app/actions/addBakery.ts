@@ -6,7 +6,6 @@ import { revalidatePath } from "next/cache";
 export async function addBakeryAction(data: {
     bakeryName: string;
     instagramId: string;
-    category: string;
 }) {
     const supabase = await createClient();
 
@@ -14,7 +13,6 @@ export async function addBakeryAction(data: {
         {
             bakery_name: data.bakeryName,
             instagram_id: data.instagramId.replace("@", ""),
-            category: data.category,
             status: "active",
         },
     ]);

@@ -1,6 +1,6 @@
 import os
 import json
-import google.generativeai as genai
+from google import genai
 from datetime import datetime, timezone
 from supabase import create_client, Client
 from dotenv import load_dotenv
@@ -26,7 +26,7 @@ def summarize_posts():
         print("ERROR: GEMINI_API_KEY environment variable is not set.")
         return False
         
-    genai.configure(api_key=api_key)
+    client = genai.Client(api_key=api_key)
 
     # 2. Fetch all active targets
     targets_response = supabase.table("target_accounts").select("id, instagram_id").eq("status", "active").execute()
@@ -56,17 +56,27 @@ def summarize_posts():
              continue
 
         # 4. Prepare Prompt for LLM
+        current_date_str = datetime.now(timezone.utc).strftime("%Y년 %m월 %d일")
         posts_text = ""
         for i, p in enumerate(posts):
-            posts_text += f"\n[게시물 {i+1} 원문]\n내용: {p.get('post_content', '내용 없음')}\n링크: {p.get('post_url', '링크 없음')}\n"
+            published_date = "날짜 알 수 없음"
+            if p.get('published_at'):
+                try:
+                    dt = datetime.fromisoformat(p['published_at'].replace('Z', '+00:00'))
+                    published_date = dt.strftime("%Y년 %m월 %d일")
+                except Exception:
+                    pass
+            posts_text += f"\n[게시물 {i+1} 원문]\n작성일: {published_date}\n내용: {p.get('post_content', '내용 없음')}\n링크: {p.get('post_url', '링크 없음')}\n"
 
         prompt = f"""
+오늘 날짜는 {current_date_str} 입니다.
 다음은 베이커리 인스타그램 계정(@{instagram_id})의 최신 게시물 {len(posts)}개 내용입니다.
 
 {posts_text}
 
 [요청 사항]
-위 게시물들에서 다음 핵심 정보들만 찾아주세요:
+1. 위 게시물들의 '작성일'을 기준 삼아, 오늘 날짜({current_date_str})로부터 1달(30일) 이상 지난 과거 게시물은 분석 대상에서 완전히 제외하고 철저히 무시하세요. (인스타그램 상단 고정된 옛날 게시물 필터링 목적)
+2. 최근 1달 이내의 유효한 게시물에서만 다음 핵심 정보들을 찾아주세요:
 - 판매 공지 (오픈 시간, 라인업, 품절 등)
 - 신메뉴 출시
 - 임시 휴무
@@ -96,8 +106,10 @@ def summarize_posts():
 
         print(f"Sending prompt to Gemini for {instagram_id}...")
         try:
-            model = genai.GenerativeModel('gemini-1.5-flash')
-            response = model.generate_content(prompt)
+            response = client.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=prompt
+            )
             ai_summary_raw = response.text.strip()
             
             # Remove markdown JSON code blocks if they exist

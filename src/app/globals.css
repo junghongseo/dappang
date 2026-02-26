@@ -14,8 +14,10 @@
   --color-text-main-dark: #EFEBE9;
   --color-text-sub-light: #795548;
   --color-text-sub-dark: #BCAAA4;
-  --font-display: var(--font-playfair), serif;
-  --font-sans: var(--font-noto-sans), var(--font-dm-sans), sans-serif;
+
+  --font-pretendard: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-display: var(--font-pretendard);
+  --font-sans: var(--font-pretendard);
 
   --radius-xl: 0.75rem;
   --radius-lg: 0.5rem;

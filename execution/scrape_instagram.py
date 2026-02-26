@@ -4,12 +4,12 @@ from datetime import datetime, timezone
 from supabase import create_client, Client
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)
 
 # ==========================================
 # CONSTANTS & CONFIG
 # ==========================================
-MAX_CALLS_PER_MONTH = 20
+MAX_CALLS_PER_MONTH = 50000
 RAPIDAPI_HOST = 'instagram-scraper-stable-api.p.rapidapi.com'
 RAPIDAPI_ENDPOINT = f'https://{RAPIDAPI_HOST}/get_ig_user_posts.php'
 
@@ -95,7 +95,7 @@ def scrape_instagram_all():
         print(f"API Call authorized. Calls used: {current_call_count}/{MAX_CALLS_PER_MONTH}. Remaining: {calls_remaining}")
 
         # 3. Request API
-        payload = {"user_name": instagram_id}
+        payload = {"username_or_url": instagram_id}
         headers = {
             "content-type": "application/x-www-form-urlencoded",
             "x-rapidapi-key": rapidapi_key,
@@ -107,14 +107,12 @@ def scrape_instagram_all():
             response.raise_for_status()
             data = response.json()
             
-            items = data.get('data', {}).get('items', [])
-            if not items:
-                items = data.get('items', [])
-                
-            top_3_posts = items[:3]
+            posts_list = data.get('posts', [])
+            top_3_posts = posts_list[:3]
             processed_posts = []
 
-            for post in top_3_posts:
+            for item in top_3_posts:
+                post = item.get('node', {})
                 caption_node = post.get('caption', {})
                 caption = caption_node.get('text', '') if caption_node else ''
                 shortcode = post.get('code', '')
@@ -122,17 +120,21 @@ def scrape_instagram_all():
                 
                 # Timestamp is usually unix epoch
                 timestamp_val = post.get('taken_at', 0)
+                if timestamp_val == 0 and caption_node:
+                    timestamp_val = caption_node.get('created_at', 0)
+                    
                 taken_at_iso = datetime.fromtimestamp(timestamp_val, tz=timezone.utc).isoformat() if timestamp_val else None
 
                 # Upsert post into DB
                 if post_url:
                     post_data = {
                         "target_account_id": target_id,
+                        "instagram_post_id": shortcode,
                         "post_url": post_url,
                         "post_content": caption,
                         "published_at": taken_at_iso
                     }
-                    supabase.table("posts").upsert(post_data, on_conflict="post_url").execute()
+                    supabase.table("posts").upsert(post_data, on_conflict="instagram_post_id").execute()
                     processed_posts.append(post_url)
             
             print(f"Successfully scraped and stored {len(processed_posts)} posts for {instagram_id}.")
@@ -145,6 +147,9 @@ def scrape_instagram_all():
             print(f"ERROR: API request failed for {instagram_id}. {e}")
             supabase.table("target_accounts").update({"status": "active"}).eq("id", target_id).execute()
 
+        import time
+        time.sleep(5)
+        
     print("All scraping tasks completed.")
 
 if __name__ == "__main__":

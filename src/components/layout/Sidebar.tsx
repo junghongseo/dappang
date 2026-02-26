@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { fetchTargetAccounts } from "@/app/actions/dashboard";
+import { TargetItem } from "@/components/dashboard/TargetItem";
 
 export async function Sidebar() {
     const targets = await fetchTargetAccounts();
@@ -20,54 +21,7 @@ export async function Sidebar() {
                 </div>
                 <div className="divide-y divide-stone-100 dark:divide-stone-700">
                     {targets.map((target) => (
-                        <div
-                            key={target.id}
-                            className={`p-4 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors group cursor-pointer border-l-4 ${target.status === "active" ? "border-primary" : "border-transparent hover:border-stone-300 dark:hover:border-stone-600"
-                                }`}
-                        >
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <h3 className={`font-bold text-lg ${target.status === 'paused' ? 'opacity-60' : ''}`}>
-                                        {target.bakery_name}
-                                    </h3>
-                                    <p className={`text-sm text-text-sub-light dark:text-text-sub-dark flex items-center gap-1 mt-1 ${target.status === 'paused' ? 'opacity-60' : ''}`}>
-                                        <span className="material-symbols-outlined text-xs">alternate_email</span>
-                                        {target.instagram_id}
-                                    </p>
-                                </div>
-                                <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-                                    <button className="text-stone-400 hover:text-primary dark:hover:text-amber-400">
-                                        <span className="material-symbols-outlined text-lg">edit</span>
-                                    </button>
-                                    <button className="text-stone-400 hover:text-red-500">
-                                        <span className="material-symbols-outlined text-lg">delete</span>
-                                    </button>
-                                </div>
-                            </div>
-                            <div className="mt-3 flex gap-2 text-xs font-medium">
-                                {target.status === "active" && (
-                                    <span className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-0.5 rounded">
-                                        활성
-                                    </span>
-                                )}
-                                {target.status === "syncing" && (
-                                    <span className="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-500 px-2 py-0.5 rounded">
-                                        동기화 중...
-                                    </span>
-                                )}
-                                {target.status === "paused" && (
-                                    <span className="bg-stone-200 dark:bg-stone-700 text-stone-600 dark:text-stone-400 px-2 py-0.5 rounded">
-                                        일시 중지됨
-                                    </span>
-                                )}
-
-                                {target.last_scraped_at && (
-                                    <span className="bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 px-2 py-0.5 rounded">
-                                        마지막 수집: {new Date(target.last_scraped_at).toLocaleDateString("ko-KR")}
-                                    </span>
-                                )}
-                            </div>
-                        </div>
+                        <TargetItem key={target.id} target={target} />
                     ))}
 
                     {targets.length === 0 && (

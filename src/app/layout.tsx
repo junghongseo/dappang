@@ -1,21 +1,5 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Noto_Sans_KR, DM_Sans } from "next/font/google";
 import "./globals.css";
-
-const playfair = Playfair_Display({
-  variable: "--font-playfair",
-  subsets: ["latin"],
-});
-
-const notoSansKR = Noto_Sans_KR({
-  variable: "--font-noto-sans",
-  subsets: ["latin"],
-});
-
-const dmSans = DM_Sans({
-  variable: "--font-dm-sans",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "Bakery Crawler Dashboard",
@@ -37,10 +21,14 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
           rel="stylesheet"
         />
+        <link
+          rel="stylesheet"
+          as="style"
+          crossOrigin="anonymous"
+          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css"
+        />
       </head>
-      <body
-        className={`${playfair.variable} ${notoSansKR.variable} ${dmSans.variable} antialiased`}
-      >
+      <body className="font-sans antialiased">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <div className="min-h-screen flex flex-col">
             <Header />

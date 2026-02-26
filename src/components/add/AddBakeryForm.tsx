@@ -11,7 +11,6 @@ import Link from "next/link";
 const formSchema = z.object({
     bakeryName: z.string().min(1, "베이커리 이름을 입력해주세요."),
     instagramId: z.string().min(1, "인스타그램 아이디를 입력해주세요."),
-    category: z.string().min(1, "카테고리를 선택해주세요."),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -30,7 +29,6 @@ export function AddBakeryForm() {
         defaultValues: {
             bakeryName: "",
             instagramId: "",
-            category: "",
         },
     });
 
@@ -102,42 +100,6 @@ export function AddBakeryForm() {
                 )}
             </div>
 
-            <div className="space-y-2">
-                <label
-                    className="block text-sm font-semibold text-text-main-light dark:text-stone-300"
-                    htmlFor="category"
-                >
-                    카테고리 선택
-                </label>
-                <div className="relative">
-                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-text-sub-light dark:text-stone-400">
-                        <span className="material-symbols-outlined text-[20px]">
-                            bakery_dining
-                        </span>
-                    </div>
-                    <select
-                        {...register("category")}
-                        className="block w-full rounded-lg border border-stone-200 dark:border-stone-700 bg-surface-light dark:bg-stone-800 py-3 pl-10 pr-10 text-text-main-light dark:text-stone-200 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none sm:text-sm shadow-sm transition-shadow appearance-none"
-                        id="category"
-                        disabled={isPending}
-                    >
-                        <option disabled value="">
-                            카테고리를 선택해주세요 (예: 크루아상, 비건)
-                        </option>
-                        <option value="artisan">아티장 브레드 (Artisan Bread)</option>
-                        <option value="pastry">페이스트리 &amp; 크루아상 (Pastry)</option>
-                        <option value="vegan">비건 베이커리 (Vegan)</option>
-                        <option value="cake">케이크 &amp; 디저트 (Cake)</option>
-                        <option value="bagel">베이글 (Bagel)</option>
-                    </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-text-sub-light dark:text-stone-400">
-                        <span className="material-symbols-outlined">expand_more</span>
-                    </div>
-                </div>
-                {errors.category && (
-                    <p className="text-red-500 text-xs">{errors.category.message}</p>
-                )}
-            </div>
 
             {errorMsg && (
                 <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm border border-red-200">
