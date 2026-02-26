@@ -1,0 +1,53 @@
+"use server";
+
+import { createClient } from "@/utils/supabase/server";
+
+export interface TargetAccountData {
+    id: string;
+    bakery_name: string;
+    instagram_id: string;
+    status: "active" | "syncing" | "paused";
+    last_scraped_at: string | null;
+}
+
+export async function fetchTargetAccounts(): Promise<TargetAccountData[]> {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
+        .from("target_accounts")
+        .select("id, bakery_name, instagram_id, status, last_scraped_at")
+        .order("created_at", { ascending: false });
+
+    if (error || !data) {
+        console.error("Error fetching target accounts:", error);
+        return [];
+    }
+
+    return data as TargetAccountData[];
+}
+
+export async function fetchAiSummaries() {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
+        .from("ai_summaries")
+        .select(`
+      id,
+      summary,
+      status,
+      created_at,
+      target_accounts (
+        id,
+        bakery_name,
+        instagram_id
+      )
+    `)
+        .order("created_at", { ascending: false });
+
+    if (error || !data) {
+        console.error("Error fetching AI summaries:", error);
+        return [];
+    }
+
+    return data;
+}

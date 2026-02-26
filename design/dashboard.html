@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bakery Crawler Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&amp;family=Playfair+Display:wght@700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#8D6E63", 
+                        primary_hover: "#6D4C41",
+                        "background-light": "#FDFBF7", 
+                        "background-dark": "#1F1D1B", 
+                        "surface-light": "#FFFFFF",
+                        "surface-dark": "#2C2A28", 
+                        "accent-bread": "#D7CCC8",
+                        "text-main-light": "#3E2723",
+                        "text-main-dark": "#EFEBE9",
+                        "text-sub-light": "#795548",
+                        "text-sub-dark": "#BCAAA4",
+                    },
+                    fontFamily: {
+                        display: ["Playfair Display", "serif"],
+                        sans: ["Noto Sans KR", "DM Sans", "sans-serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "12px",
+                    },
+                },
+            },
+        };
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-text-main-light dark:text-text-main-dark transition-colors duration-300 font-sans min-h-screen flex flex-col">
+<header class="bg-surface-light dark:bg-surface-dark border-b border-stone-200 dark:border-stone-700 sticky top-0 z-50">
+<div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white shadow-md">
+<span class="material-symbols-outlined">bakery_dining</span>
+</div>
+<div>
+<h1 class="font-display text-2xl font-bold tracking-tight text-primary dark:text-amber-500">BakeryCrawler</h1>
+<p class="text-xs text-text-sub-light dark:text-text-sub-dark font-medium uppercase tracking-wider">인스타그램 수집기</p>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex flex-col items-end md:flex-row md:items-center gap-4 text-sm">
+<div class="flex items-center gap-2 bg-stone-100 dark:bg-stone-800 px-3 py-1.5 rounded-lg border border-stone-200 dark:border-stone-700">
+<span class="material-symbols-outlined text-amber-600 text-lg">api</span>
+<span class="font-medium">API 사용량: <span class="text-primary dark:text-amber-400 font-bold">14 / 20</span></span>
+</div>
+<div class="flex items-center gap-2 text-text-sub-light dark:text-text-sub-dark">
+<span class="material-symbols-outlined text-lg">schedule</span>
+<span>업데이트됨: <span class="font-medium">12분 전</span></span>
+</div>
+</div>
+<button class="p-2 rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors" onclick="document.documentElement.classList.toggle('dark')">
+<span class="material-symbols-outlined dark:hidden">dark_mode</span>
+<span class="material-symbols-outlined hidden dark:block text-amber-400">light_mode</span>
+</button>
+</div>
+</div>
+</header>
+<main class="flex-grow max-w-7xl mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8 w-full">
+<aside class="lg:col-span-4 space-y-6">
+<div class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-stone-200 dark:border-stone-700 overflow-hidden">
+<div class="p-5 border-b border-stone-100 dark:border-stone-700 flex justify-between items-center bg-stone-50 dark:bg-stone-800/50">
+<h2 class="font-display text-xl font-bold text-primary dark:text-amber-500">관리 대상 베이커리</h2>
+<button class="bg-primary hover:bg-primary_hover text-white text-sm px-3 py-1.5 rounded-lg transition shadow-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">add</span> 새 베이커리 추가
+                </button>
+</div>
+<div class="divide-y divide-stone-100 dark:divide-stone-700">
+<div class="p-4 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors group cursor-pointer border-l-4 border-primary">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="font-bold text-lg">타르틴 베이커리</h3>
+<p class="text-sm text-text-sub-light dark:text-text-sub-dark flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-xs">alternate_email</span> tartinebakery
+                            </p>
+</div>
+<div class="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+<button class="text-stone-400 hover:text-primary dark:hover:text-amber-400"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="text-stone-400 hover:text-red-500"><span class="material-symbols-outlined text-lg">delete</span></button>
+</div>
+</div>
+<div class="mt-3 flex gap-2 text-xs font-medium">
+<span class="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-0.5 rounded">활성</span>
+<span class="bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 px-2 py-0.5 rounded">마지막 게시물: 2시간 전</span>
+</div>
+</div>
+<div class="p-4 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors group cursor-pointer border-l-4 border-transparent hover:border-stone-300 dark:hover:border-stone-600">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="font-bold text-lg">플라워 + 워터</h3>
+<p class="text-sm text-text-sub-light dark:text-text-sub-dark flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-xs">alternate_email</span> flourandwaterpasta
+                            </p>
+</div>
+<div class="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+<button class="text-stone-400 hover:text-primary dark:hover:text-amber-400"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="text-stone-400 hover:text-red-500"><span class="material-symbols-outlined text-lg">delete</span></button>
+</div>
+</div>
+<div class="mt-3 flex gap-2 text-xs font-medium">
+<span class="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-0.5 rounded">활성</span>
+<span class="bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 px-2 py-0.5 rounded">마지막 게시물: 1일 전</span>
+</div>
+</div>
+<div class="p-4 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors group cursor-pointer border-l-4 border-transparent hover:border-stone-300 dark:hover:border-stone-600">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="font-bold text-lg">아르시코 베이커리</h3>
+<p class="text-sm text-text-sub-light dark:text-text-sub-dark flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-xs">alternate_email</span> arsicaultbakery
+                            </p>
+</div>
+<div class="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+<button class="text-stone-400 hover:text-primary dark:hover:text-amber-400"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="text-stone-400 hover:text-red-500"><span class="material-symbols-outlined text-lg">delete</span></button>
+</div>
+</div>
+<div class="mt-3 flex gap-2 text-xs font-medium">
+<span class="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-500 px-2 py-0.5 rounded">동기화 중...</span>
+</div>
+</div>
+<div class="p-4 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors group cursor-pointer border-l-4 border-transparent hover:border-stone-300 dark:hover:border-stone-600">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="font-bold text-lg opacity-60">비 파티세리</h3>
+<p class="text-sm text-text-sub-light dark:text-text-sub-dark flex items-center gap-1 mt-1 opacity-60">
+<span class="material-symbols-outlined text-xs">alternate_email</span> bpatisserie
+                            </p>
+</div>
+<div class="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+<button class="text-stone-400 hover:text-primary dark:hover:text-amber-400"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="text-stone-400 hover:text-red-500"><span class="material-symbols-outlined text-lg">delete</span></button>
+</div>
+</div>
+<div class="mt-3 flex gap-2 text-xs font-medium">
+<span class="bg-stone-200 dark:bg-stone-700 text-stone-600 dark:text-stone-400 px-2 py-0.5 rounded">일시 중지됨</span>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-primary/5 dark:bg-primary/10 rounded-xl p-5 border border-primary/10 dark:border-primary/20">
+<h3 class="font-display font-bold text-primary dark:text-amber-500 mb-3">모니터링 통계</h3>
+<div class="grid grid-cols-2 gap-4">
+<div>
+<p class="text-xs text-text-sub-light dark:text-text-sub-dark uppercase">총 게시물</p>
+<p class="text-2xl font-bold">1,248</p>
+</div>
+<div>
+<p class="text-xs text-text-sub-light dark:text-text-sub-dark uppercase">요약 완료</p>
+<p class="text-2xl font-bold">86</p>
+</div>
+</div>
+</div>
+</aside>
+<section class="lg:col-span-8 space-y-6">
+<div class="flex justify-between items-center mb-2">
+<h2 class="font-display text-2xl font-bold text-primary dark:text-amber-500">최신 AI 요약 정보</h2>
+<div class="flex gap-2">
+<button class="text-sm px-3 py-1.5 rounded-lg bg-white dark:bg-surface-dark border border-stone-200 dark:border-stone-700 shadow-sm hover:bg-stone-50 transition dark:hover:bg-stone-700">필터</button>
+<button class="text-sm px-3 py-1.5 rounded-lg bg-white dark:bg-surface-dark border border-stone-200 dark:border-stone-700 shadow-sm hover:bg-stone-50 transition dark:hover:bg-stone-700 flex items-center gap-1"><span class="material-symbols-outlined text-sm">refresh</span> 새로고침</button>
+</div>
+</div>
+<article class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-stone-200 dark:border-stone-700 p-6 relative overflow-hidden group hover:shadow-md transition-all duration-300">
+<div class="absolute top-0 right-0 p-4 opacity-50">
+<span class="material-symbols-outlined text-8xl text-stone-100 dark:text-stone-800 rotate-12 -mr-6 -mt-6 pointer-events-none">auto_awesome</span>
+</div>
+<div class="relative z-10">
+<div class="flex items-center gap-3 mb-4">
+<div class="w-12 h-12 rounded-full bg-stone-200 dark:bg-stone-700 overflow-hidden border-2 border-primary/20">
+<img alt="Tartine Bakery Logo" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCNkXZYb1aMyKtjN-IbxFPtvUOrH9ZoWzz272e3BWkiW2SWGc5Gr7O_RVj9NTxFi1GqsDGY66ivIEH2luxRJE5hxu-uGoDFtLQzaRU1Zdc7BQzSxORHZNG_8YHl9p89y3qqcvNUQpAklTaxa1mT4MfK6QiGANZniMh7akmgdvSUxuKvLAI7IbJ9czZNITAbh_DTLSOXPs2eCUAJ9_UgN4hdm7pDTDxNH4fd-XwWSem4XkcNb8ShLJlRr6G7GYFtqHKdxlbx3gelKAhL"/>
+</div>
+<div>
+<h3 class="font-bold text-xl text-primary dark:text-amber-500">타르틴 베이커리</h3>
+<p class="text-xs text-stone-500 dark:text-stone-400">새 게시물 3개 분석됨 • 2시간 전</p>
+</div>
+<a class="ml-auto text-pink-600 dark:text-pink-400 hover:text-pink-700 flex items-center gap-1 text-sm font-medium" href="#">
+<span class="material-symbols-outlined text-sm">open_in_new</span> 인스타그램 방문
+                    </a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+<div class="bg-orange-50 dark:bg-orange-900/10 p-4 rounded-lg border border-orange-100 dark:border-orange-800/30">
+<h4 class="font-bold text-orange-800 dark:text-orange-300 mb-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">restaurant_menu</span> 신메뉴 소식
+                        </h4>
+<ul class="list-disc list-inside text-sm text-stone-700 dark:text-stone-300 space-y-1">
+<li>시즌 한정 <strong>감 타르트(Persimmon Tart)</strong> 출시.</li>
+<li>모닝번 재입고 완료.</li>
+</ul>
+</div>
+<div class="bg-purple-50 dark:bg-purple-900/10 p-4 rounded-lg border border-purple-100 dark:border-purple-800/30">
+<h4 class="font-bold text-purple-800 dark:text-purple-300 mb-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">event</span> 예정된 이벤트
+                        </h4>
+<ul class="list-disc list-inside text-sm text-stone-700 dark:text-stone-300 space-y-1">
+<li>이번 주 토요일 오후 2시, Chad Robertson 저자 사인회.</li>
+</ul>
+</div>
+</div>
+<div class="mt-4 p-3 bg-stone-50 dark:bg-stone-800/50 rounded-lg text-sm text-stone-600 dark:text-stone-400 italic border border-stone-100 dark:border-stone-800">
+                    "이번 주말에 들러서 새로운 시즌 스페셜을 맛보세요! 여러분께 선보이게 되어 정말 기쁩니다..." <span class="text-stone-400 not-italic">— 게시물 발췌</span>
+</div>
+</div>
+</article>
+<article class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-stone-200 dark:border-stone-700 p-6 relative overflow-hidden group hover:shadow-md transition-all duration-300">
+<div class="relative z-10">
+<div class="flex items-center gap-3 mb-4">
+<div class="w-12 h-12 rounded-full bg-stone-200 dark:bg-stone-700 overflow-hidden border-2 border-primary/20">
+<img alt="Flour + Water Logo" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBagIKkIRFDgy-KyZF16z3oUaKbYxYQ1ArkX6sOWgA_BsY0QcsCmwJq-vXzCvJ2mPaj1XQ8nQIGxwT2HGG4vYkC8xAKMVd4F9yZ6p2F6gFSFYvzkGSO4oWxPuwQidB757UpfL78-agH3cTiR8UatUf3S-ljPwkccGM1Qxgv2qzKk00cQKIKZuxBDcR7oJJvpLYd-ecSlwKxqdqFN83QXFLEVXFm1MaAZMj4PNpcQjrHnyKXjEAFRHbe5Ll9dq-CQKx-IZL9g7VzzlcS"/>
+</div>
+<div>
+<h3 class="font-bold text-xl text-primary dark:text-amber-500">플라워 + 워터</h3>
+<p class="text-xs text-stone-500 dark:text-stone-400">새 게시물 1개 분석됨 • 1일 전</p>
+</div>
+<a class="ml-auto text-pink-600 dark:text-pink-400 hover:text-pink-700 flex items-center gap-1 text-sm font-medium" href="#">
+<span class="material-symbols-outlined text-sm">open_in_new</span> 인스타그램 방문
+                    </a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+<div class="bg-green-50 dark:bg-green-900/10 p-4 rounded-lg border border-green-100 dark:border-green-800/30">
+<h4 class="font-bold text-green-800 dark:text-green-300 mb-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">local_offer</span> 세일 및 프로모션
+                        </h4>
+<ul class="list-disc list-inside text-sm text-stone-700 dark:text-stone-300 space-y-1">
+<li>오늘 오후 4시 이후 모든 사워도우 빵 <strong>20% 할인</strong>.</li>
+</ul>
+</div>
+<div class="bg-red-50 dark:bg-red-900/10 p-4 rounded-lg border border-red-100 dark:border-red-800/30">
+<h4 class="font-bold text-red-800 dark:text-red-300 mb-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">schedule</span> 휴무 안내
+                        </h4>
+<p class="text-sm text-stone-700 dark:text-stone-300">임시 휴무 일정 없음.</p>
+</div>
+</div>
+</div>
+</article>
+<article class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-stone-200 dark:border-stone-700 p-6 relative overflow-hidden group hover:shadow-md transition-all duration-300">
+<div class="relative z-10">
+<div class="flex items-center gap-3 mb-4">
+<div class="w-12 h-12 rounded-full bg-stone-200 dark:bg-stone-700 overflow-hidden border-2 border-primary/20">
+<img alt="Arsicault Bakery Logo" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVd8dFeI-MryrR37AgcdalUZlq129I_pR_3RHlD2rlMDUH0bDFo513hXaIcr2cGofLAhLOEgOLvMtNsyTAG0Q8mhYJFo7B72tKoyNpnvlhCq1uotfiJwatSx0rO--YuOrMcfPJfIxYzZIueqzyMCbEYjEGnYOJ_54xjuDOMx3Wvd13f4k7LkpaLeKYUYEd30GwOSgwOkU-qS-aXAz2tG8tk7H9h6O5sVhp8G5jaShehT54ay4SLanSaUNlzTLzL24RyWGLRsqe6wD_"/>
+</div>
+<div>
+<h3 class="font-bold text-xl text-primary dark:text-amber-500">아르시코 베이커리</h3>
+<p class="text-xs text-stone-500 dark:text-stone-400">새 게시물 5개 분석됨 • 2일 전</p>
+</div>
+<a class="ml-auto text-pink-600 dark:text-pink-400 hover:text-pink-700 flex items-center gap-1 text-sm font-medium" href="#">
+<span class="material-symbols-outlined text-sm">open_in_new</span> 인스타그램 방문
+                    </a>
+</div>
+<div class="mt-4">
+<div class="bg-blue-50 dark:bg-blue-900/10 p-4 rounded-lg border border-blue-100 dark:border-blue-800/30">
+<h4 class="font-bold text-blue-800 dark:text-blue-300 mb-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">info</span> 일반 업데이트
+                        </h4>
+<p class="text-sm text-stone-700 dark:text-stone-300 mb-2">시빅 센터 지점에 새로운 야외 좌석 공간이 마련되었습니다. 평일 크루아상 구매 제한이 해제되었습니다.</p>
+</div>
+</div>
+</div>
+</article>
+</section>
+</main>
+<footer class="mt-auto border-t border-stone-200 dark:border-stone-700 bg-surface-light dark:bg-surface-dark py-6">
+<div class="max-w-7xl mx-auto px-6 text-center text-sm text-stone-400 dark:text-stone-500">
+<p>© 2023 BakeryCrawler AI. Baked with <span class="text-red-400">♥</span> and Flour.</p>
+</div>
+</footer>
+
+</body></html>

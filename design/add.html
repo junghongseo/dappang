@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html class="light" lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Add New Bakery</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#8B5E3C", // Warm brown
+                        "primary-hover": "#6F4B30",
+                        "background-light": "#F9F7F2", // Soft beige
+                        "surface-light": "#FFFFFF",
+                        "text-main": "#4A3B32", // Dark brown text
+                        "text-secondary": "#8D7B6F", // Muted brown text
+                        "border-light": "#E8E1D9",
+                    },
+                    fontFamily: {
+                        "display": ["Work Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light font-display min-h-screen flex items-center justify-center p-4">
+<div class="relative w-full max-w-lg overflow-hidden rounded-xl bg-surface-light shadow-xl ring-1 ring-black/5 transition-all">
+<div class="relative px-8 pt-8 pb-2 flex justify-between items-start">
+<div class="space-y-1">
+<h3 class="text-2xl font-bold text-text-main">새 베이커리 등록</h3>
+<p class="text-sm text-text-secondary">
+                새로운 베이커리의 정보를 입력하여 추적을 시작하세요.
+            </p>
+</div>
+<button class="rounded-full p-2 text-text-secondary hover:bg-background-light hover:text-text-main transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="px-8 mt-4">
+<div class="bg-background-light border border-border-light rounded-lg p-3 flex items-start gap-3">
+<span class="material-symbols-outlined text-primary text-xl mt-0.5">info</span>
+<p class="text-sm text-text-main">크롤러가 자동으로 최신 게시물 3개를 수집합니다.</p>
+</div>
+</div>
+<div class="px-8 pt-6 pb-8">
+<form class="space-y-5">
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-text-main" for="bakery-name">
+                    베이커리 이름
+                </label>
+<div class="relative">
+<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-text-secondary">
+<span class="material-symbols-outlined text-[20px]">storefront</span>
+</div>
+<input class="block w-full rounded-lg border-border-light bg-surface-light py-3 pl-10 pr-3 text-text-main placeholder:text-text-secondary/60 focus:border-primary focus:ring-primary sm:text-sm shadow-sm transition-shadow" id="bakery-name" placeholder="예: 런던 베이글 뮤지엄" type="text"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-text-main" for="instagram-id">
+                    인스타그램 아이디 또는 URL
+                </label>
+<div class="relative">
+<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-text-secondary">
+<span class="material-symbols-outlined text-[20px]">alternate_email</span>
+</div>
+<input class="block w-full rounded-lg border-border-light bg-surface-light py-3 pl-10 pr-3 text-text-main placeholder:text-text-secondary/60 focus:border-primary focus:ring-primary sm:text-sm shadow-sm transition-shadow" id="instagram-id" placeholder="@bakery_id" type="text"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-text-main" for="category">
+                    카테고리 선택
+                </label>
+<div class="relative">
+<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-text-secondary">
+<span class="material-symbols-outlined text-[20px]">bakery_dining</span>
+</div>
+<select class="block w-full rounded-lg border-border-light bg-surface-light py-3 pl-10 pr-10 text-text-main focus:border-primary focus:ring-primary sm:text-sm shadow-sm transition-shadow appearance-none" id="category">
+<option disabled="" selected="" value="">카테고리를 선택해주세요 (예: 크루아상, 비건)</option>
+<option value="artisan">아티장 브레드 (Artisan Bread)</option>
+<option value="pastry">페이스트리 &amp; 크루아상 (Pastry)</option>
+<option value="vegan">비건 베이커리 (Vegan)</option>
+<option value="cake">케이크 &amp; 디저트 (Cake)</option>
+<option value="bagel">베이글 (Bagel)</option>
+</select>
+<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-text-secondary">
+<span class="material-symbols-outlined">expand_more</span>
+</div>
+</div>
+</div>
+<div class="mt-8 flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-6 border-t border-border-light">
+<button class="inline-flex w-full justify-center items-center rounded-lg bg-transparent px-5 py-3 text-sm font-semibold text-text-secondary hover:bg-background-light hover:text-text-main sm:w-auto transition-colors border border-transparent hover:border-border-light" type="button">
+                    취소
+                </button>
+<button class="inline-flex w-full justify-center items-center rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white shadow-md hover:bg-primary-hover sm:w-auto transition-all transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" type="button">
+<span class="material-symbols-outlined text-lg mr-2">add</span>
+                    베이커리 추가하기
+                </button>
+</div>
+</form>
+</div>
+</div>
+
+</body></html>
