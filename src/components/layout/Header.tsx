@@ -1,8 +1,7 @@
 "use client";
 
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
-import { createClient } from "@/utils/supabase/client";
+import { useEffect, useState, useRef, useCallback } from "react";
 
 function getRelativeTimeString(date: Date | null) {
     if (!date) return '업데이트 없음';
@@ -26,64 +25,61 @@ export function Header() {
     const [isCrawling, setIsCrawling] = useState(false);
     const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
     const [timeAgo, setTimeAgo] = useState<string>('계산 중...');
+    const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+    // 서버에서 상태를 가져오는 함수 (순수 fetch, SDK 미사용)
+    const fetchStatus = useCallback(async () => {
+        try {
+            const res = await fetch('/api/crawl/status', { cache: 'no-store' });
+            if (!res.ok) return;
+            const data = await res.json();
+
+            const wasRunning = isCrawlingRef.current;
+            const nowRunning = data.isCrawling;
+
+            setIsCrawling(nowRunning);
+            isCrawlingRef.current = nowRunning;
+
+            if (data.lastScrapedAt) {
+                setLastUpdated(new Date(data.lastScrapedAt));
+            }
+
+            // 크롤링이 활성화된 상태면 폴링 시작, 끝났으면 중지
+            if (nowRunning && !pollingRef.current) {
+                startPolling();
+            } else if (wasRunning && !nowRunning) {
+                stopPolling();
+            }
+        } catch (e) {
+            console.error('Failed to fetch crawl status:', e);
+        }
+    }, []);
+
+    const isCrawlingRef = useRef(false);
+
+    const startPolling = useCallback(() => {
+        if (pollingRef.current) return; // 이미 폴링 중이면 무시
+        pollingRef.current = setInterval(() => {
+            fetchStatus();
+        }, 3000);
+    }, [fetchStatus]);
+
+    const stopPolling = useCallback(() => {
+        if (pollingRef.current) {
+            clearInterval(pollingRef.current);
+            pollingRef.current = null;
+        }
+    }, []);
+
+    // 마운트 시 초기 상태 로드
     useEffect(() => {
         setMounted(true);
-
-        const supabase = createClient();
-        const fetchLatest = async () => {
-            const { data } = await supabase
-                .from('target_accounts')
-                .select('last_scraped_at')
-                .order('last_scraped_at', { ascending: false })
-                .limit(1)
-                .maybeSingle();
-
-            if (data?.last_scraped_at) {
-                setLastUpdated(new Date(data.last_scraped_at));
-            } else {
-                setLastUpdated(null);
-            }
-        };
-
-        const fetchCrawlingStatus = async () => {
-            const { data } = await supabase
-                .from('system_status')
-                .select('is_crawling')
-                .eq('id', 'global')
-                .maybeSingle();
-
-            if (data) {
-                setIsCrawling(data.is_crawling);
-            }
-        };
-
-        fetchLatest();
-        fetchCrawlingStatus();
-
-        // 3초마다 상태 폴링 (Realtime 대체)
-        const pollingInterval = setInterval(async () => {
-            const { data } = await supabase
-                .from('system_status')
-                .select('is_crawling')
-                .eq('id', 'global')
-                .maybeSingle();
-
-            if (data) {
-                setIsCrawling((prevIsCrawling) => {
-                    // 크롤링 중(true)이었다가 방금 완료(false)된 순간
-                    if (prevIsCrawling && !data.is_crawling) {
-                        fetchLatest(); // 화면에 표시되는 업데이트 타임스탬프 강제 갱신
-                    }
-                    return data.is_crawling;
-                });
-            }
-        }, 3000);
+        fetchStatus();
 
         return () => {
-            clearInterval(pollingInterval);
+            stopPolling();
         };
-    }, []);
+    }, [fetchStatus, stopPolling]);
 
     useEffect(() => {
         if (!lastUpdated) {
@@ -121,12 +117,15 @@ export function Header() {
                     <div className="flex flex-col items-end md:flex-row md:items-center gap-4 text-sm">
                         <button
                             onClick={async () => {
-                                setIsCrawling(true); // Optimistic UI
+                                setIsCrawling(true);
+                                isCrawlingRef.current = true;
                                 try {
                                     await fetch('/api/crawl', { method: 'POST' });
+                                    startPolling(); // 크롤링 시작 후 3초 간격 폴링 시작
                                 } catch (e) {
                                     console.error(e);
-                                    setIsCrawling(false); // Revert on error
+                                    setIsCrawling(false);
+                                    isCrawlingRef.current = false;
                                 }
                             }}
                             disabled={isCrawling}
