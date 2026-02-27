@@ -31,7 +31,9 @@ export async function GET() {
                 statusError: statusResult.error,
                 latestError: latestResult.error,
                 targetsError: targetsResult.error,
-                targetsCount: targetsResult.data?.length ?? 0
+                targetsCount: targetsResult.data?.length ?? 0,
+                keyAnon: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.substring(0, 10),
+                keyPub: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY?.substring(0, 10)
             }
         });
     } catch (error: any) {
