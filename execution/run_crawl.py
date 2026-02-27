@@ -12,7 +12,12 @@ from dotenv import load_dotenv
 load_dotenv(override=True)
 
 supabase_url = os.environ.get("NEXT_PUBLIC_SUPABASE_URL", "").strip()
+if supabase_url.startswith("NEXT_PUBLIC_SUPABASE_URL="):
+    supabase_url = supabase_url.replace("NEXT_PUBLIC_SUPABASE_URL=", "")
+
 supabase_key = os.environ.get("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY", "").strip()
+if supabase_key.startswith("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY="):
+    supabase_key = supabase_key.replace("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=", "")
 
 if not supabase_url or not supabase_key:
     print("ERROR: Supabase credentials not found.")

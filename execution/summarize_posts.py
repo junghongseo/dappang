@@ -10,8 +10,13 @@ load_dotenv()
 # ==========================================
 # SUPABASE SETUP
 # ==========================================
-supabase_url = os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
-supabase_key = os.environ.get("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY")
+supabase_url = os.environ.get("NEXT_PUBLIC_SUPABASE_URL", "").strip()
+if supabase_url.startswith("NEXT_PUBLIC_SUPABASE_URL="):
+    supabase_url = supabase_url.replace("NEXT_PUBLIC_SUPABASE_URL=", "")
+
+supabase_key = os.environ.get("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY", "").strip()
+if supabase_key.startswith("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY="):
+    supabase_key = supabase_key.replace("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=", "")
 
 if not supabase_url or not supabase_key:
     print("ERROR: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY must be set.")
@@ -22,6 +27,9 @@ supabase: Client = create_client(supabase_url, supabase_key)
 def summarize_posts():
     # 1. Load Gemini API Key
     api_key = os.environ.get('GEMINI_API_KEY', '').strip()
+    if api_key.startswith('GEMINI_API_KEY='):
+        api_key = api_key.replace('GEMINI_API_KEY=', '')
+        
     if not api_key:
         print("ERROR: GEMINI_API_KEY environment variable is not set.")
         return False

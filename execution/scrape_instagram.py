@@ -17,7 +17,12 @@ RAPIDAPI_ENDPOINT = f'https://{RAPIDAPI_HOST}/get_ig_user_posts.php'
 # SUPABASE SETUP
 # ==========================================
 supabase_url = os.environ.get("NEXT_PUBLIC_SUPABASE_URL", "").strip()
+if supabase_url.startswith("NEXT_PUBLIC_SUPABASE_URL="):
+    supabase_url = supabase_url.replace("NEXT_PUBLIC_SUPABASE_URL=", "")
+    
 supabase_key = os.environ.get("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY", "").strip()
+if supabase_key.startswith("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY="):
+    supabase_key = supabase_key.replace("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=", "")
 
 if not supabase_url or not supabase_key:
     print("ERROR: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY must be set.")
@@ -67,6 +72,9 @@ def fetch_target_accounts():
 
 def scrape_instagram_all():
     rapidapi_key = os.environ.get('RAPIDAPI_KEY', '').strip()
+    if rapidapi_key.startswith('RAPIDAPI_KEY='):
+        rapidapi_key = rapidapi_key.replace('RAPIDAPI_KEY=', '')
+        
     if not rapidapi_key:
         print("ERROR: RAPIDAPI_KEY environment variable is not set.")
         return None
@@ -108,6 +116,18 @@ def scrape_instagram_all():
             data = response.json()
             
             posts_list = data.get('posts', [])
+            
+            # Sort posts by timestamp descending to ensure pinned posts don't hide the actual latest posts
+            def get_timestamp(item):
+                post = item.get('node', {})
+                ts = post.get('taken_at', 0)
+                if ts == 0:
+                    caption_node = post.get('caption', {})
+                    if caption_node:
+                        ts = caption_node.get('created_at', 0)
+                return ts
+                
+            posts_list.sort(key=get_timestamp, reverse=True)
             top_3_posts = posts_list[:3]
             processed_posts = []
 
