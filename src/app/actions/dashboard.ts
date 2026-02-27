@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
+import { unstable_noStore as noStore } from "next/cache";
 
 export interface TargetAccountData {
     id: string;
@@ -11,6 +12,7 @@ export interface TargetAccountData {
 }
 
 export async function fetchTargetAccounts(): Promise<TargetAccountData[]> {
+    noStore();
     const supabase = await createClient();
 
     const { data, error } = await supabase
@@ -27,6 +29,7 @@ export async function fetchTargetAccounts(): Promise<TargetAccountData[]> {
 }
 
 export async function fetchAiSummaries() {
+    noStore();
     const supabase = await createClient();
 
     const { data, error } = await supabase
