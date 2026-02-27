@@ -61,25 +61,27 @@ export function Header() {
         fetchLatest();
         fetchCrawlingStatus();
 
-        const channel = supabase
-            .channel('header-updates')
-            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'target_accounts' }, (payload) => {
-                if (payload.new.last_scraped_at) {
-                    const newTime = new Date(payload.new.last_scraped_at);
-                    setLastUpdated(prev => {
-                        return prev ? (newTime > prev ? newTime : prev) : newTime;
-                    });
-                }
-            })
-            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'system_status', filter: 'id=eq.global' }, (payload) => {
-                if (payload.new && typeof payload.new.is_crawling === 'boolean') {
-                    setIsCrawling(payload.new.is_crawling);
-                }
-            })
-            .subscribe();
+        // 3초마다 상태 폴링 (Realtime 대체)
+        const pollingInterval = setInterval(async () => {
+            const { data } = await supabase
+                .from('system_status')
+                .select('is_crawling')
+                .eq('id', 'global')
+                .maybeSingle();
+
+            if (data) {
+                setIsCrawling((prevIsCrawling) => {
+                    // 크롤링 중(true)이었다가 방금 완료(false)된 순간
+                    if (prevIsCrawling && !data.is_crawling) {
+                        fetchLatest(); // 화면에 표시되는 업데이트 타임스탬프 강제 갱신
+                    }
+                    return data.is_crawling;
+                });
+            }
+        }, 3000);
 
         return () => {
-            supabase.removeChannel(channel);
+            clearInterval(pollingInterval);
         };
     }, []);
 
