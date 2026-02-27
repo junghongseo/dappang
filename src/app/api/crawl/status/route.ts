@@ -7,7 +7,7 @@ export async function GET() {
     try {
         const supabase = await createClient();
 
-        const [statusResult, latestResult] = await Promise.all([
+        const [statusResult, latestResult, targetsResult] = await Promise.all([
             supabase
                 .from('system_status')
                 .select('is_crawling')
@@ -19,15 +19,24 @@ export async function GET() {
                 .order('last_scraped_at', { ascending: false })
                 .limit(1)
                 .maybeSingle(),
+            supabase
+                .from('target_accounts')
+                .select('id, bakery_name, instagram_id, status, last_scraped_at')
         ]);
 
         return NextResponse.json({
             isCrawling: statusResult.data?.is_crawling ?? false,
             lastScrapedAt: latestResult.data?.last_scraped_at ?? null,
+            debug: {
+                statusError: statusResult.error,
+                latestError: latestResult.error,
+                targetsError: targetsResult.error,
+                targetsCount: targetsResult.data?.length ?? 0
+            }
         });
     } catch (error: any) {
         return NextResponse.json(
-            { isCrawling: false, lastScrapedAt: null, error: error.message },
+            { isCrawling: false, lastScrapedAt: null, error: error.message, stack: error.stack },
             { status: 500 }
         );
     }
