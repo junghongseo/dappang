@@ -29,6 +29,17 @@ jobs:
           NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY }}
         run: npx --yes opennextjs-cloudflare build
 
+      - name: Set Cloudflare secrets
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: '52f09d9c14956d6aa9d0521532739505'
+          command: secret put GH_PAT_TOKEN --name dappang
+          secrets: |
+            GH_PAT_TOKEN
+        env:
+          GH_PAT_TOKEN: ${{ secrets.GH_PAT_TOKEN }}
+
       - name: Deploy to Cloudflare
         uses: cloudflare/wrangler-action@v3
         with:

@@ -2,10 +2,10 @@ import { NextResponse } from 'next/server';
 
 export async function POST() {
     try {
-        const githubToken = process.env.GITHUB_TOKEN;
+        const githubToken = process.env.GH_PAT_TOKEN;
         if (!githubToken) {
             return NextResponse.json(
-                { success: false, error: 'GITHUB_TOKEN is not configured' },
+                { success: false, error: 'GH_PAT_TOKEN is not configured' },
                 { status: 500 }
             );
         }
