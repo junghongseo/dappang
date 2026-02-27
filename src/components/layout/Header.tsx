@@ -46,7 +46,20 @@ export function Header() {
             }
         };
 
+        const fetchCrawlingStatus = async () => {
+            const { data } = await supabase
+                .from('system_status')
+                .select('is_crawling')
+                .eq('id', 'global')
+                .maybeSingle();
+
+            if (data) {
+                setIsCrawling(data.is_crawling);
+            }
+        };
+
         fetchLatest();
+        fetchCrawlingStatus();
 
         const channel = supabase
             .channel('header-updates')
@@ -56,6 +69,11 @@ export function Header() {
                     setLastUpdated(prev => {
                         return prev ? (newTime > prev ? newTime : prev) : newTime;
                     });
+                }
+            })
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'system_status', filter: 'id=eq.global' }, (payload) => {
+                if (payload.new && typeof payload.new.is_crawling === 'boolean') {
+                    setIsCrawling(payload.new.is_crawling);
                 }
             })
             .subscribe();
@@ -101,13 +119,12 @@ export function Header() {
                     <div className="flex flex-col items-end md:flex-row md:items-center gap-4 text-sm">
                         <button
                             onClick={async () => {
-                                setIsCrawling(true);
+                                setIsCrawling(true); // Optimistic UI
                                 try {
                                     await fetch('/api/crawl', { method: 'POST' });
                                 } catch (e) {
                                     console.error(e);
-                                } finally {
-                                    setTimeout(() => setIsCrawling(false), 3000);
+                                    setIsCrawling(false); // Revert on error
                                 }
                             }}
                             disabled={isCrawling}
@@ -117,7 +134,7 @@ export function Header() {
                                 {isCrawling ? 'sync' : 'play_arrow'}
                             </span>
                             <span className="font-bold">
-                                {isCrawling ? '크롤링 요청됨...' : '새로 크롤링'}
+                                {isCrawling ? '정보 수집 및 분석 중...' : '새로 크롤링'}
                             </span>
                         </button>
                         <div className="flex items-center gap-2 text-text-sub-light dark:text-text-sub-dark">
