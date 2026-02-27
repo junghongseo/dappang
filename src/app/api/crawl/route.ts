@@ -23,6 +23,7 @@ export async function POST() {
                     'Authorization': `Bearer ${githubToken}`,
                     'Accept': 'application/vnd.github.v3+json',
                     'Content-Type': 'application/json',
+                    'User-Agent': 'dappang-cloudflare-worker',
                 },
                 body: JSON.stringify({ ref: 'main' }),
             }
