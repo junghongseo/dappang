@@ -3,6 +3,8 @@ import { SummaryCard, SummaryData } from "@/components/dashboard/SummaryCard";
 import { fetchAiSummaries } from "@/app/actions/dashboard";
 import { RealtimeSubscriber } from "@/components/dashboard/RealtimeSubscriber";
 
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardPage() {
   const summariesData = await fetchAiSummaries();
 

@@ -2,6 +2,8 @@ import Link from "next/link";
 import { fetchTargetAccounts } from "@/app/actions/dashboard";
 import { TargetItem } from "@/components/dashboard/TargetItem";
 
+export const dynamic = 'force-dynamic';
+
 export async function Sidebar() {
     const targets = await fetchTargetAccounts();
 
