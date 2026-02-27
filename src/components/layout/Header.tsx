@@ -2,6 +2,7 @@
 
 import { useTheme } from "next-themes";
 import { useEffect, useState, useRef, useCallback } from "react";
+import { useRouter } from "next/navigation";
 
 function getRelativeTimeString(date: Date | null) {
     if (!date) return '업데이트 없음';
@@ -26,6 +27,7 @@ export function Header() {
     const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
     const [timeAgo, setTimeAgo] = useState<string>('계산 중...');
     const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const router = useRouter();
 
     // 서버에서 상태를 가져오는 함수 (순수 fetch, SDK 미사용)
     const fetchStatus = useCallback(async () => {
@@ -49,11 +51,13 @@ export function Header() {
                 startPolling();
             } else if (wasRunning && !nowRunning) {
                 stopPolling();
+                // 크롤링이 종료되면 Next.js App Router의 데이터를 새로고침하여 화면 UI를 업데이트
+                router.refresh();
             }
         } catch (e) {
             console.error('Failed to fetch crawl status:', e);
         }
-    }, []);
+    }, [router]);
 
     const isCrawlingRef = useRef(false);
 
