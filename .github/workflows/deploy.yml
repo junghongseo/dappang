@@ -30,15 +30,11 @@ jobs:
         run: npx --yes opennextjs-cloudflare build
 
       - name: Set Cloudflare secrets
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: '52f09d9c14956d6aa9d0521532739505'
-          command: secret put GH_PAT_TOKEN --name dappang
-          secrets: |
-            GH_PAT_TOKEN
         env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: '52f09d9c14956d6aa9d0521532739505'
           GH_PAT_TOKEN: ${{ secrets.GH_PAT_TOKEN }}
+        run: echo "$GH_PAT_TOKEN" | npx wrangler secret put GH_PAT_TOKEN --name dappang
 
       - name: Deploy to Cloudflare
         uses: cloudflare/wrangler-action@v3
