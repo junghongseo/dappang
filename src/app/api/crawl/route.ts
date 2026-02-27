@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { createClient } from '@/utils/supabase/server';
 
 export async function POST() {
     try {
@@ -9,6 +10,9 @@ export async function POST() {
                 { status: 500 }
             );
         }
+
+        const supabase = await createClient();
+        await supabase.from('system_status').upsert({ id: 'global', is_crawling: true });
 
         const owner = 'junghongseo';
         const repo = 'dappang';
