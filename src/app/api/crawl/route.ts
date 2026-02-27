@@ -1,22 +1,51 @@
 import { NextResponse } from 'next/server';
-import { exec } from 'child_process';
 
 export async function POST() {
     try {
-        // run_crawl.py handles is_crawling state management internally
-        const cmd = `.venv/bin/python execution/run_crawl.py`;
+        const githubToken = process.env.GITHUB_TOKEN;
+        if (!githubToken) {
+            return NextResponse.json(
+                { success: false, error: 'GITHUB_TOKEN is not configured' },
+                { status: 500 }
+            );
+        }
 
-        // Fire and forget
-        exec(cmd, { cwd: process.cwd() }, (error, stdout, stderr) => {
-            if (error) {
-                console.error(`[crawl] Error: ${error.message}`);
+        const owner = 'junghongseo';
+        const repo = 'dappang';
+        const workflowFile = 'crawl.yml';
+
+        // Trigger GitHub Actions workflow_dispatch
+        const response = await fetch(
+            `https://api.github.com/repos/${owner}/${repo}/actions/workflows/${workflowFile}/dispatches`,
+            {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${githubToken}`,
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ ref: 'main' }),
             }
-            if (stdout) console.log(`[crawl] STDOUT: ${stdout}`);
-            if (stderr) console.error(`[crawl] STDERR: ${stderr}`);
-        });
+        );
 
-        return NextResponse.json({ success: true, message: '크롤링이 시작되었습니다.' });
+        if (response.status === 204) {
+            return NextResponse.json({
+                success: true,
+                message: '크롤링 워크플로우가 트리거되었습니다.',
+            });
+        }
+
+        const errorBody = await response.text();
+        console.error(`[crawl] GitHub API error: ${response.status} ${errorBody}`);
+        return NextResponse.json(
+            { success: false, error: `GitHub API responded with ${response.status}` },
+            { status: 500 }
+        );
     } catch (error: any) {
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        console.error(`[crawl] Error: ${error.message}`);
+        return NextResponse.json(
+            { success: false, error: error.message },
+            { status: 500 }
+        );
     }
 }
