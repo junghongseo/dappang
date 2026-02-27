@@ -21,7 +21,7 @@ supabase: Client = create_client(supabase_url, supabase_key)
 
 def summarize_posts():
     # 1. Load Gemini API Key
-    api_key = os.environ.get('GEMINI_API_KEY')
+    api_key = os.environ.get('GEMINI_API_KEY', '').strip()
     if not api_key:
         print("ERROR: GEMINI_API_KEY environment variable is not set.")
         return False

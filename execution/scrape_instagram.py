@@ -16,8 +16,8 @@ RAPIDAPI_ENDPOINT = f'https://{RAPIDAPI_HOST}/get_ig_user_posts.php'
 # ==========================================
 # SUPABASE SETUP
 # ==========================================
-supabase_url = os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
-supabase_key = os.environ.get("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY")
+supabase_url = os.environ.get("NEXT_PUBLIC_SUPABASE_URL", "").strip()
+supabase_key = os.environ.get("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY", "").strip()
 
 if not supabase_url or not supabase_key:
     print("ERROR: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY must be set.")
@@ -66,7 +66,7 @@ def fetch_target_accounts():
     return response.data
 
 def scrape_instagram_all():
-    rapidapi_key = os.environ.get('RAPIDAPI_KEY')
+    rapidapi_key = os.environ.get('RAPIDAPI_KEY', '').strip()
     if not rapidapi_key:
         print("ERROR: RAPIDAPI_KEY environment variable is not set.")
         return None
