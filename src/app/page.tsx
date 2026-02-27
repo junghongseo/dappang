@@ -38,7 +38,7 @@ export default async function DashboardPage() {
       id: item.id,
       bakery_name: target_accounts?.bakery_name || "Unknown Bakery",
       instagram_id: target_accounts?.instagram_id || "",
-      updated_at: new Date(item.created_at).toLocaleDateString("ko-KR"),
+      updated_at: new Date(item.created_at).toLocaleDateString("ko-KR", { timeZone: "Asia/Seoul" }),
       excerpt,
       blocks
     };

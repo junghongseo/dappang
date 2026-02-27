@@ -110,8 +110,11 @@ export function SummaryCard({ data }: { data: SummaryData }) {
 
                         const formatLinksToIcons = (text: string) => {
                             if (!text) return "";
-                            const urlRegex = /\[?(https?:\/\/[^\s\]\)]+)\]?/g;
-                            return text.replace(urlRegex, (match, url) => {
+                            // Match existing <a> tags, or [http...], or raw http...
+                            const regex = /<a\s+(?:[^>]*?\s+)?href=(["'])(.*?)\1[^>]*>.*?<\/a>|\[?(https?:\/\/[^\s<\]\)]+)\]?/gi;
+                            return text.replace(regex, (match, quote, aHref, rawUrl) => {
+                                const url = aHref || rawUrl;
+                                if (!url) return match;
                                 const cleanUrl = url.replace(/^[\[\(]/, '').replace(/[\]\)]$/, '');
                                 return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-300 transition-colors mx-1 align-middle bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 rounded px-1.5 py-0.5 border border-stone-200 dark:border-stone-700" title="해당 링크 열기">
                                     <span class="material-symbols-outlined text-[14px]">link</span>
