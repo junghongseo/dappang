@@ -38,7 +38,7 @@ export async function POST() {
         const errorBody = await response.text();
         console.error(`[crawl] GitHub API error: ${response.status} ${errorBody}`);
         return NextResponse.json(
-            { success: false, error: `GitHub API responded with ${response.status}` },
+            { success: false, error: `GitHub API responded with ${response.status}`, details: errorBody, tokenPrefix: githubToken.substring(0, 6) },
             { status: 500 }
         );
     } catch (error: any) {
