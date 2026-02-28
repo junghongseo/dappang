@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { setAdminSession } from "@/utils/auth";
+
 
 export async function POST(request: NextRequest) {
     try {
@@ -29,9 +29,20 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        await setAdminSession();
+        const response = NextResponse.json({ success: true });
+        const token = crypto.randomUUID();
 
-        return NextResponse.json({ success: true });
+        response.cookies.set({
+            name: "admin_session",
+            value: token,
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            path: "/",
+            maxAge: 60 * 60 * 24 * 7, // 7일
+        });
+
+        return response;
     } catch (error: any) {
         console.error("[auth] Login error:", error.message);
         return NextResponse.json(

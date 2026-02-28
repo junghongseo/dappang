@@ -1,6 +1,6 @@
 "use client";
 
-import { useTheme } from "next-themes";
+
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { fetchTargetAccounts, forceRefreshDashboard } from "@/app/actions/dashboard";
@@ -23,7 +23,6 @@ function getRelativeTimeString(date: Date | null) {
 }
 
 export function Header() {
-    const { theme, setTheme } = useTheme();
     const [mounted, setMounted] = useState(false);
     const [isCrawling, setIsCrawling] = useState(false);
     const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
@@ -158,7 +157,7 @@ export function Header() {
                         </div>
                     </div>
                     <button
-                        className="p-2 rounded-full hover:bg-red-50 dark:hover:bg-red-900/30 text-text-sub-light dark:text-text-sub-dark hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                        className="p-2 rounded-full hover:bg-red-50 text-text-sub-light hover:text-red-600 transition-colors"
                         onClick={async () => {
                             await fetch('/api/auth/logout', { method: 'POST' });
                             router.push('/login');
@@ -168,27 +167,6 @@ export function Header() {
                         title="로그아웃"
                     >
                         <span className="material-symbols-outlined">logout</span>
-                    </button>
-                    <button
-                        className="p-2 rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
-                        onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                        aria-label="Toggle Dark Mode"
-                    >
-                        {mounted && (
-                            <>
-                                <span className={`material-symbols-outlined ${theme === 'dark' ? 'hidden' : 'block'}`}>
-                                    dark_mode
-                                </span>
-                                <span className={`material-symbols-outlined text-amber-400 ${theme === 'dark' ? 'block' : 'hidden'}`}>
-                                    light_mode
-                                </span>
-                            </>
-                        )}
-                        {!mounted && (
-                            <span className="material-symbols-outlined opacity-0">
-                                dark_mode
-                            </span>
-                        )}
                     </button>
                 </div>
             </div>

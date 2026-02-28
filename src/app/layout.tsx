@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description: "식당빵 베이커리 소식 및 주문일정 수집 AI",
 };
 
-import { ThemeProvider } from "@/components/ThemeProvider";
+
 
 export default function RootLayout({
   children,
@@ -28,11 +28,9 @@ export default function RootLayout({
         />
       </head>
       <body className="font-sans antialiased">
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <div className="min-h-screen flex flex-col">
-            {children}
-          </div>
-        </ThemeProvider>
+        <div className="min-h-screen flex flex-col">
+          {children}
+        </div>
       </body>
     </html>
   );

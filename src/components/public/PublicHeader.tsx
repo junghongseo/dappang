@@ -1,11 +1,10 @@
 "use client";
 
-import { useTheme } from "next-themes";
+
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
 export function PublicHeader() {
-    const { theme, setTheme } = useTheme();
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -36,27 +35,6 @@ export function PublicHeader() {
                         <span className="material-symbols-outlined text-base">admin_panel_settings</span>
                         <span className="hidden sm:inline">관리자</span>
                     </Link>
-                    <button
-                        className="p-2 rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
-                        onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                        aria-label="Toggle Dark Mode"
-                    >
-                        {mounted && (
-                            <>
-                                <span className={`material-symbols-outlined ${theme === 'dark' ? 'hidden' : 'block'}`}>
-                                    dark_mode
-                                </span>
-                                <span className={`material-symbols-outlined text-amber-400 ${theme === 'dark' ? 'block' : 'hidden'}`}>
-                                    light_mode
-                                </span>
-                            </>
-                        )}
-                        {!mounted && (
-                            <span className="material-symbols-outlined opacity-0">
-                                dark_mode
-                            </span>
-                        )}
-                    </button>
                 </div>
             </div>
         </header>
