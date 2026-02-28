@@ -1,5 +1,6 @@
 import os
 import json
+import asyncio
 from google import genai
 from datetime import datetime, timezone
 from supabase import create_client, Client
@@ -24,59 +25,38 @@ if not supabase_url or not supabase_key:
 
 supabase: Client = create_client(supabase_url, supabase_key)
 
-def summarize_posts():
-    # 1. Load Gemini API Key
-    api_key = os.environ.get('GEMINI_API_KEY', '').strip()
-    if api_key.startswith('GEMINI_API_KEY='):
-        api_key = api_key.replace('GEMINI_API_KEY=', '')
-        
-    if not api_key:
-        print("ERROR: GEMINI_API_KEY environment variable is not set.")
-        return False
-        
-    client = genai.Client(api_key=api_key)
-
-    # 2. Fetch all active targets
-    targets_response = supabase.table("target_accounts").select("id, instagram_id").eq("status", "active").execute()
-    targets = targets_response.data
+async def process_target(target, client, current_date_str):
+    target_id = target['id']
+    instagram_id = target['instagram_id']
     
-    if not targets:
-         print("INFO: No active target accounts found.")
-         return True
-
-    for target in targets:
-        target_id = target['id']
-        instagram_id = target['instagram_id']
+    # 3. Fetch latest 3 posts for this target
+    posts_response = supabase.table("posts") \
+        .select("post_content, post_url, published_at") \
+        .eq("target_account_id", target_id) \
+        .order("published_at", desc=True) \
+        .limit(3) \
+        .execute()
         
-        # 3. Fetch latest 3 posts for this target
-        posts_response = supabase.table("posts") \
-            .select("post_content, post_url, published_at") \
-            .eq("target_account_id", target_id) \
-            .order("published_at", desc=True) \
-            .limit(3) \
-            .execute()
-            
-        posts = posts_response.data
-        
-        if not posts:
-             print(f"INFO: No posts found for {instagram_id}. Updating timestamp and skipping summary.")
-             supabase.table("target_accounts").update({"last_scraped_at": datetime.now(timezone.utc).isoformat()}).eq("id", target_id).execute()
-             continue
+    posts = posts_response.data
+    
+    if not posts:
+         print(f"INFO: No posts found for {instagram_id}. Updating timestamp and skipping summary.")
+         supabase.table("target_accounts").update({"last_scraped_at": datetime.now(timezone.utc).isoformat()}).eq("id", target_id).execute()
+         return
 
-        # 4. Prepare Prompt for LLM
-        current_date_str = datetime.now(timezone.utc).strftime("%Y년 %m월 %d일")
-        posts_text = ""
-        for i, p in enumerate(posts):
-            published_date = "날짜 알 수 없음"
-            if p.get('published_at'):
-                try:
-                    dt = datetime.fromisoformat(p['published_at'].replace('Z', '+00:00'))
-                    published_date = dt.strftime("%Y년 %m월 %d일")
-                except Exception:
-                    pass
-            posts_text += f"\n[게시물 {i+1} 원문]\n작성일: {published_date}\n내용: {p.get('post_content', '내용 없음')}\n링크: {p.get('post_url', '링크 없음')}\n"
+    # 4. Prepare Prompt for LLM
+    posts_text = ""
+    for i, p in enumerate(posts):
+        published_date = "날짜 알 수 없음"
+        if p.get('published_at'):
+            try:
+                dt = datetime.fromisoformat(p['published_at'].replace('Z', '+00:00'))
+                published_date = dt.strftime("%Y년 %m월 %d일")
+            except Exception:
+                pass
+        posts_text += f"\n[게시물 {i+1} 원문]\n작성일: {published_date}\n내용: {p.get('post_content', '내용 없음')}\n링크: {p.get('post_url', '링크 없음')}\n"
 
-        prompt = f"""
+    prompt = f"""
 오늘 날짜는 {current_date_str} 입니다.
 다음은 베이커리 인스타그램 계정(@{instagram_id})의 최신 게시물 {len(posts)}개 내용입니다.
 
@@ -113,58 +93,89 @@ def summarize_posts():
 자연어 인사말이나 주석을 절대 포함하지 마십시오. 오직 순수한 JSON만 출력하세요.
 """
 
-        print(f"Sending prompt to Gemini for {instagram_id}...")
-        try:
-            response = client.models.generate_content(
-                model='gemini-2.5-flash',
-                contents=prompt
-            )
-            ai_summary_raw = response.text.strip()
-            
-            # Remove markdown JSON code blocks if they exist
-            if ai_summary_raw.startswith("```json"):
-                 ai_summary_raw = ai_summary_raw[7:]
-                 if ai_summary_raw.endswith("```"):
-                     ai_summary_raw = ai_summary_raw[:-3]
-                     
-            ai_summary_raw = ai_summary_raw.strip()
-            
-            # Log the parsed summary
-            summary_json_obj = json.loads(ai_summary_raw)
-            
-            # 5. Insert or Update AI Summary
-            # Check if an existing summary exists for this target
-            existing_summary_response = supabase.table("ai_summaries").select("id").eq("target_account_id", target_id).execute()
-            
-            summary_payload = {
-                 "target_account_id": target_id,
-                 "summary": summary_json_obj,
-                 "status": "success"
-            }
-            
-            if existing_summary_response.data and len(existing_summary_response.data) > 0:
-                 # Update
-                 summary_id = existing_summary_response.data[0]['id']
-                 supabase.table("ai_summaries").update(summary_payload).eq("id", summary_id).execute()
-            else:
-                 # Insert
-                 supabase.table("ai_summaries").insert(summary_payload).execute()
+    print(f"Sending async prompt to Gemini for {instagram_id}...")
+    ai_summary_raw = ""
+    try:
+        response = await client.aio.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=prompt
+        )
+        ai_summary_raw = response.text.strip()
+        
+        # Remove markdown JSON code blocks if they exist
+        if ai_summary_raw.startswith("```json"):
+             ai_summary_raw = ai_summary_raw[7:]
+             if ai_summary_raw.endswith("```"):
+                 ai_summary_raw = ai_summary_raw[:-3]
                  
-            # 6. Update Target Account scraped timestamp
-            supabase.table("target_accounts").update({"last_scraped_at": datetime.now(timezone.utc).isoformat()}).eq("id", target_id).execute()
-            
-            print(f"SUCCESS: Generated and saved summary for {instagram_id}")
-            
-        except json.JSONDecodeError as de:
-            print(f"ERROR: LLM returned invalid JSON for {instagram_id}. Result: {ai_summary_raw}")
-            # 무한 재시도 및 상태 고착화 방지를 위해 에러 시에도 timestamp 강제 갱신
-            supabase.table("target_accounts").update({"last_scraped_at": datetime.now(timezone.utc).isoformat()}).eq("id", target_id).execute()
-        except Exception as e:
-            print(f"ERROR: Failed to generate summary for {instagram_id}. {e}")
-            supabase.table("target_accounts").update({"last_scraped_at": datetime.now(timezone.utc).isoformat()}).eq("id", target_id).execute()
+        ai_summary_raw = ai_summary_raw.strip()
+        
+        # Log the parsed summary
+        summary_json_obj = json.loads(ai_summary_raw)
+        
+        # 5. Insert or Update AI Summary
+        # Check if an existing summary exists for this target
+        existing_summary_response = supabase.table("ai_summaries").select("id").eq("target_account_id", target_id).execute()
+        
+        summary_payload = {
+             "target_account_id": target_id,
+             "summary": summary_json_obj,
+             "status": "success"
+        }
+        
+        if existing_summary_response.data and len(existing_summary_response.data) > 0:
+             # Update
+             summary_id = existing_summary_response.data[0]['id']
+             supabase.table("ai_summaries").update(summary_payload).eq("id", summary_id).execute()
+        else:
+             # Insert
+             supabase.table("ai_summaries").insert(summary_payload).execute()
+             
+        # 6. Update Target Account scraped timestamp
+        supabase.table("target_accounts").update({"last_scraped_at": datetime.now(timezone.utc).isoformat()}).eq("id", target_id).execute()
+        
+        print(f"SUCCESS: Generated and saved summary for {instagram_id}")
+        
+    except json.JSONDecodeError as de:
+        print(f"ERROR: LLM returned invalid JSON for {instagram_id}. Result: {ai_summary_raw}")
+        # 무한 재시도 및 상태 고착화 방지를 위해 에러 시에도 timestamp 강제 갱신
+        supabase.table("target_accounts").update({"last_scraped_at": datetime.now(timezone.utc).isoformat()}).eq("id", target_id).execute()
+    except Exception as e:
+        print(f"ERROR: Failed to generate summary for {instagram_id}. {e}")
+        supabase.table("target_accounts").update({"last_scraped_at": datetime.now(timezone.utc).isoformat()}).eq("id", target_id).execute()
+
+async def summarize_posts_async():
+    # 1. Load Gemini API Key
+    api_key = os.environ.get('GEMINI_API_KEY', '').strip()
+    if api_key.startswith('GEMINI_API_KEY='):
+        api_key = api_key.replace('GEMINI_API_KEY=', '')
+        
+    if not api_key:
+        print("ERROR: GEMINI_API_KEY environment variable is not set.")
+        return False
+        
+    client = genai.Client(api_key=api_key)
+
+    # 2. Fetch all active targets
+    targets_response = supabase.table("target_accounts").select("id, instagram_id").eq("status", "active").execute()
+    targets = targets_response.data
+    
+    if not targets:
+         print("INFO: No active target accounts found.")
+         return True
+
+    current_date_str = datetime.now(timezone.utc).strftime("%Y년 %m월 %d일")
+    
+    # 3. Create concurrent tasks for all targets
+    print(f"Starting concurrent summarization for {len(targets)} targets...")
+    tasks = [process_target(t, client, current_date_str) for t in targets]
+    await asyncio.gather(*tasks)
             
     print(f"All summaries generated successfully.")
     return True
+
+def summarize_posts():
+    asyncio.run(summarize_posts_async())
 
 if __name__ == "__main__":
     summarize_posts()
