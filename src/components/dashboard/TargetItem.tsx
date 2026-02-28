@@ -9,6 +9,7 @@ type TargetAccount = {
     id: string;
     bakery_name: string;
     instagram_id: string;
+    shopping_mall_url: string | null;
     status: string;
     last_scraped_at: string | null;
 };
