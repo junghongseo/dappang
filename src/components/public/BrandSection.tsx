@@ -73,7 +73,7 @@ function formatLinksToIcons(text: string) {
         const url = aHref || rawUrl;
         if (!url) return match;
         const cleanUrl = url.replace(/^[\[\(]/, '').replace(/[\]\)]$/, '');
-        return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-300 transition-colors mx-1 align-middle bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 rounded px-1.5 py-0.5 border border-stone-200 dark:border-stone-700" title="해당 링크 열기" onClick="(e) => e.stopPropagation()">
+        return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-300 transition-colors mx-1 align-middle bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 rounded px-1.5 py-0.5 border border-stone-200 dark:border-stone-700" title="해당 링크 열기" onclick="event.stopPropagation()">
             <span class="material-symbols-outlined text-[14px]">link</span>
             <span class="text-[11px] font-bold ml-0.5">링크</span>
         </a>`;
@@ -196,8 +196,9 @@ function GalleryCard({ block, onClick }: { block: BlockContent, onClick: () => v
     );
 }
 
-/** 4차 개선: 데스크톱용 클릭 가능한 고정 규격 카드 */
-function DesktopCard({ block, onClick }: { block: BlockContent, onClick: () => void }) {
+/** 7차 개선: 데스크톱용 아코디언(하단 펼침) 카드 */
+function DesktopCard({ block }: { block: BlockContent }) {
+    const [isExpanded, setIsExpanded] = useState(false);
     const style = getBlockStyle(block.type);
 
     let previewText = "";
@@ -207,13 +208,19 @@ function DesktopCard({ block, onClick }: { block: BlockContent, onClick: () => v
         previewText = stripHtml(block.text);
     }
 
+    // AI 본문에 포함된 날것의 링크 지저분함 가리기 (미리보기 용)
+    const cleanPreviewText = previewText
+        .replace(/\[?https?:\/\/[^\s<\]\)]+\]?/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+
     return (
         <button
-            onClick={onClick}
-            className={`w-full h-64 ${style.bg} p-6 rounded-[20px] border ${style.border} shadow-sm flex flex-col text-left group hover:-translate-y-1 hover:shadow-md transition-all cursor-pointer relative overflow-hidden focus:outline-none`}
+            onClick={() => setIsExpanded(!isExpanded)}
+            className={`w-full ${style.bg} p-6 rounded-[20px] border ${style.border} shadow-sm flex flex-col text-left group hover:shadow-md transition-all cursor-pointer relative focus:outline-none`}
         >
-            <div className="flex items-center gap-3 mb-4 shrink-0">
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center ${style.accent}`}>
+            <div className="flex items-center gap-3 mb-4 shrink-0 w-full">
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${style.accent}`}>
                     <span className={`material-symbols-outlined text-2xl ${style.text}`}>{style.icon}</span>
                 </div>
                 <h4 className={`font-bold text-[17px] ${style.text} line-clamp-1 flex-1 tracking-tight`}>
@@ -221,14 +228,36 @@ function DesktopCard({ block, onClick }: { block: BlockContent, onClick: () => v
                 </h4>
             </div>
 
-            <p className="text-stone-600 dark:text-stone-300 text-[15px] sm:text-base leading-relaxed line-clamp-4 relative z-10 w-full mb-2">
-                {previewText}
-            </p>
+            <div className={`transition-all duration-300 ease-in-out w-full overflow-hidden ${isExpanded ? "max-h-[800px] mb-4 opacity-100" : "max-h-20 mb-2 opacity-90"}`}>
+                {isExpanded ? (
+                    block.items && block.items.length > 0 ? (
+                        <ul className="space-y-3 text-[15px] sm:text-base leading-relaxed text-stone-700 dark:text-stone-300 relative z-10 w-full">
+                            {block.items.map((item, i) => (
+                                <li key={i} className="flex items-start gap-2">
+                                    <span className="text-stone-400 dark:text-stone-500 mt-1 flex-shrink-0">•</span>
+                                    <span dangerouslySetInnerHTML={{ __html: formatLinksToIcons(item) }} />
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p
+                            className="text-[15px] sm:text-base leading-relaxed text-stone-700 dark:text-stone-300 relative z-10 w-full"
+                            dangerouslySetInnerHTML={{ __html: block.text ? formatLinksToIcons(block.text) : "" }}
+                        />
+                    )
+                ) : (
+                    <p className="text-stone-600 dark:text-stone-300 text-[15px] sm:text-base leading-relaxed line-clamp-3 relative z-10 w-full">
+                        {cleanPreviewText}
+                    </p>
+                )}
+            </div>
 
-            <div className="mt-auto w-full flex justify-end shrink-0 relative z-20">
-                <div className={`flex items-center gap-1.5 text-sm font-bold ${style.text} opacity-60 group-hover:opacity-100 transition-opacity bg-black/5 dark:bg-white/10 px-3 py-1.5 rounded-full`}>
-                    <span className="material-symbols-outlined text-[18px]">open_in_new</span>
-                    <span>상세보기</span>
+            <div className={`mt-auto w-full flex justify-center shrink-0 relative z-20 pt-3 border-t transition-colors ${isExpanded ? 'border-black/5 dark:border-white/5' : 'border-transparent'}`}>
+                <div className={`flex items-center gap-1 text-sm font-bold ${style.text} ${isExpanded ? 'opacity-100' : 'opacity-50'} group-hover:opacity-100 transition-opacity bg-black/5 dark:bg-white/10 px-3 py-1.5 rounded-full`}>
+                    <span className="material-symbols-outlined text-[18px]">
+                        {isExpanded ? "expand_less" : "expand_more"}
+                    </span>
+                    <span>{isExpanded ? "접기" : "펼쳐보기"}</span>
                 </div>
             </div>
 
@@ -360,7 +389,7 @@ export function BrandSection({ data }: { data: BrandData }) {
             {/* 데스크톱: 펼쳐진 그리드 (고정 폭 클릭형 카드로 변경) */}
             <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-5 px-1">
                 {data.blocks.map((block, idx) => (
-                    <DesktopCard key={idx} block={block} onClick={() => setSelectedBlock(block)} />
+                    <DesktopCard key={idx} block={block} />
                 ))}
             </div>
 
