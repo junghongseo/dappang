@@ -168,7 +168,7 @@ def scrape_instagram_all():
             supabase.table("target_accounts").update({"status": "active"}).eq("id", target_id).execute()
 
         import time
-        time.sleep(5)
+        time.sleep(1)
         
     print("All scraping tasks completed.")
 
