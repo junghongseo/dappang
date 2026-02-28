@@ -12,6 +12,15 @@ export async function POST() {
         }
 
         const supabase = await createClient();
+
+        const statusRes = await supabase.from('system_status').select('is_crawling').eq('id', 'global').maybeSingle();
+        if (statusRes.data?.is_crawling) {
+            return NextResponse.json({
+                success: false,
+                message: '이미 크롤링이 진행 중입니다. 잠시 후 다시 시도해주세요.',
+            }, { status: 409 });
+        }
+
         await supabase.from('system_status').upsert({ id: 'global', is_crawling: true });
 
         const owner = 'junghongseo';

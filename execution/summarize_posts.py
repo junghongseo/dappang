@@ -92,12 +92,12 @@ def summarize_posts():
 
 [출력 형식 가이드 (반드시 유효한 JSON 형식으로 출력할 것)]
 당신은 시스템 앱의 AI 파싱 엔진입니다. 반드시 아래의 JSON 포맷으로 렌더링 가능한 구조체만 답하세요. 
-블록 타입은 "news", "event", "sale", "holiday", "info" 중 하나여야 합니다. 텍스트 내부의 강조 표시는 <strong> 태그를 사용해도 됩니다.
+블록 타입은 "news", "event", "sale", "holiday", "info" 중 하나여야 합니다. 텍스트 내부의 강조 표시는 <strong> 태그를 사용해도 됩니다. 단, `excerpt` 필드의 문자열에는 <strong> 등 일체의 HTML 마크업을 허용하지 않으며 오직 순수 텍스트만 작성해야 합니다.
 ★가장 중요★: 각 항목(items)의 내용 끝에는 반드시 해당 원문의 실제 링크 주소를 [https://www.instagram.com/p/...] 형태로 붙여주세요. "게시물 링크"라는 글자 대신 실제 URL 주소를 넣어야 합니다.
 
 ```json
 {{
-  "excerpt": "전체 포스트 내용을 아우르는 가장 핵심적인 한 줄 발췌 문장",
+  "excerpt": "전체 포스트 내용을 아우르는 가장 핵심적인 한 줄 발췌 문장 (HTML 금지)",
   "blocks": [
     {{
       "type": "news",
@@ -157,8 +157,11 @@ def summarize_posts():
             
         except json.JSONDecodeError as de:
             print(f"ERROR: LLM returned invalid JSON for {instagram_id}. Result: {ai_summary_raw}")
+            # 무한 재시도 및 상태 고착화 방지를 위해 에러 시에도 timestamp 강제 갱신
+            supabase.table("target_accounts").update({"last_scraped_at": datetime.now(timezone.utc).isoformat()}).eq("id", target_id).execute()
         except Exception as e:
             print(f"ERROR: Failed to generate summary for {instagram_id}. {e}")
+            supabase.table("target_accounts").update({"last_scraped_at": datetime.now(timezone.utc).isoformat()}).eq("id", target_id).execute()
             
     print(f"All summaries generated successfully.")
     return True
