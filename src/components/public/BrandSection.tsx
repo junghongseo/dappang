@@ -119,7 +119,7 @@ function DetailModal({ block, bakeryName, onClose }: { block: BlockContent | nul
                         </div>
                         <div>
                             <p className="text-sm text-stone-500 dark:text-stone-400 font-medium tracking-tight mb-0.5">{bakeryName}</p>
-                            <h3 className={`font-bold text-xl leading-tight ${style.text}`}>{block.title}</h3>
+                            <h3 className={`font-bold text-xl leading-tight ${style.text}`}>{stripHtml(block.title)}</h3>
                         </div>
                     </div>
                     <button
@@ -178,7 +178,7 @@ function GalleryCard({ block, onClick }: { block: BlockContent, onClick: () => v
             </div>
 
             <h4 className={`text-base sm:text-lg font-bold ${style.text} line-clamp-1 mb-2 w-full text-center tracking-tight`}>
-                {block.title}
+                {stripHtml(block.title)}
             </h4>
 
             <p className="text-xs sm:text-sm text-stone-600 dark:text-stone-400 line-clamp-2 w-full leading-snug">
@@ -224,7 +224,7 @@ function DesktopCard({ block }: { block: BlockContent }) {
                     <span className={`material-symbols-outlined text-2xl ${style.text}`}>{style.icon}</span>
                 </div>
                 <h4 className={`font-bold text-[17px] ${style.text} line-clamp-1 flex-1 tracking-tight`}>
-                    {block.title}
+                    {stripHtml(block.title)}
                 </h4>
             </div>
 
