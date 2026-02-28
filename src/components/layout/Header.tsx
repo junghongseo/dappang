@@ -116,10 +116,10 @@ export function Header() {
                     </div>
                     <div>
                         <h1 className="font-display text-2xl font-bold tracking-tight text-primary dark:text-amber-500">
-                            BakeryCrawler
+                            다빵 캘린더
                         </h1>
                         <p className="text-xs text-text-sub-light dark:text-text-sub-dark font-medium uppercase tracking-wider">
-                            인스타그램 수집기
+                            식당빵 베이커리 소식 및 주문일정 수집 AI
                         </p>
                     </div>
                 </div>

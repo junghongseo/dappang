@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Bakery Crawler Dashboard",
-  description: "AI-powered bakery Instagram crawler",
+  title: "다빵 캘린더",
+  description: "식당빵 베이커리 소식 및 주문일정 수집 AI",
 };
 
 import { ThemeProvider } from "@/components/ThemeProvider";
