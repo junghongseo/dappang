@@ -1,9 +1,19 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { unstable_noStore as noStore } from "next/cache";
 
-export async function POST() {
+export async function POST(request: NextRequest) {
     noStore();
+
+    // 인증 확인 (미들웨어에서도 확인하지만 이중 검증)
+    const session = request.cookies.get("admin_session");
+    if (!session?.value) {
+        return NextResponse.json(
+            { success: false, error: "인증이 필요합니다." },
+            { status: 401 }
+        );
+    }
+
     try {
         const githubToken = process.env.GH_PAT_TOKEN;
         if (!githubToken) {

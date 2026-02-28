@@ -2,8 +2,14 @@
 
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
+import { verifyAdminSession } from "@/utils/auth";
 
 export async function deleteBakeryAction(id: string) {
+    const isAuthenticated = await verifyAdminSession();
+    if (!isAuthenticated) {
+        return { success: false, error: "관리자 인증이 필요합니다." };
+    }
+
     const supabase = await createClient();
 
     const { error } = await supabase.from("target_accounts").delete().eq("id", id);
@@ -12,10 +18,16 @@ export async function deleteBakeryAction(id: string) {
     }
 
     revalidatePath("/");
+    revalidatePath("/admin");
     return { success: true };
 }
 
 export async function editBakeryAction(id: string, newName: string, newInstagramId: string) {
+    const isAuthenticated = await verifyAdminSession();
+    if (!isAuthenticated) {
+        return { success: false, error: "관리자 인증이 필요합니다." };
+    }
+
     const supabase = await createClient();
 
     const { error } = await supabase.from("target_accounts").update({
@@ -33,3 +45,4 @@ export async function editBakeryAction(id: string, newName: string, newInstagram
     revalidatePath("/");
     return { success: true };
 }
+

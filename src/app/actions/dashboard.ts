@@ -61,4 +61,5 @@ import { revalidatePath } from "next/cache";
 export async function forceRefreshDashboard() {
     noStore();
     revalidatePath("/", "layout");
+    revalidatePath("/admin", "layout");
 }

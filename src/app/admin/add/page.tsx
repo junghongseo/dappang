@@ -15,7 +15,7 @@ export default function AddBakeryPage() {
                         </p>
                     </div>
                     <Link
-                        href="/"
+                        href="/admin"
                         className="rounded-full p-2 text-text-sub-light dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 hover:text-text-main-light dark:hover:text-amber-500 transition-colors"
                     >
                         <span className="material-symbols-outlined">close</span>

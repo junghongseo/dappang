@@ -7,7 +7,6 @@ export const metadata: Metadata = {
 };
 
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { Header } from "@/components/layout/Header";
 
 export default function RootLayout({
   children,
@@ -31,7 +30,6 @@ export default function RootLayout({
       <body className="font-sans antialiased">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <div className="min-h-screen flex flex-col">
-            <Header />
             {children}
           </div>
         </ThemeProvider>
@@ -39,3 +37,4 @@ export default function RootLayout({
     </html>
   );
 }
+

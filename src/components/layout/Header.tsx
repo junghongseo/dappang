@@ -158,6 +158,18 @@ export function Header() {
                         </div>
                     </div>
                     <button
+                        className="p-2 rounded-full hover:bg-red-50 dark:hover:bg-red-900/30 text-text-sub-light dark:text-text-sub-dark hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                        onClick={async () => {
+                            await fetch('/api/auth/logout', { method: 'POST' });
+                            router.push('/login');
+                            router.refresh();
+                        }}
+                        aria-label="로그아웃"
+                        title="로그아웃"
+                    >
+                        <span className="material-symbols-outlined">logout</span>
+                    </button>
+                    <button
                         className="p-2 rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
                         onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
                         aria-label="Toggle Dark Mode"

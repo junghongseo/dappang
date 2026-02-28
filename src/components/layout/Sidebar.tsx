@@ -15,7 +15,7 @@ export async function Sidebar() {
                         관리 대상 베이커리
                     </h2>
                     <Link
-                        href="/add"
+                        href="/admin/add"
                         className="bg-primary hover:bg-primary-hover text-white text-sm px-3 py-1.5 rounded-lg transition shadow-sm flex items-center gap-1"
                     >
                         <span className="material-symbols-outlined text-sm">add</span> 새 베이커리 추가
@@ -30,7 +30,7 @@ export async function Sidebar() {
                         <div className="p-8 text-center text-stone-500">
                             <span className="material-symbols-outlined text-4xl mb-2 opacity-50">search_off</span>
                             <p>추적 중인 베이커리가 없습니다.</p>
-                            <Link href="/add" className="text-primary hover:underline mt-2 inline-block text-sm">
+                            <Link href="/admin/add" className="text-primary hover:underline mt-2 inline-block text-sm">
                                 새로 추가하기
                             </Link>
                         </div>

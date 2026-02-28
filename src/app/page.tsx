@@ -1,16 +1,14 @@
-import { Sidebar } from "@/components/layout/Sidebar";
-import { SummaryCard, SummaryData } from "@/components/dashboard/SummaryCard";
 import { fetchAiSummaries } from "@/app/actions/dashboard";
-import { RealtimeSubscriber } from "@/components/dashboard/RealtimeSubscriber";
+import { PublicHeader } from "@/components/public/PublicHeader";
+import { BrandSection, BrandData } from "@/components/public/BrandSection";
 
 export const dynamic = 'force-dynamic';
 
-export default async function DashboardPage() {
+export default async function PublicPage() {
   const summariesData = await fetchAiSummaries();
 
-  // Transform DB data to SummaryData format
-  const parsedSummaries: SummaryData[] = summariesData.map((item: any) => {
-    // If summary is a string, attempt to parse it (assuming it's JSON from python scraper)
+  // Transform DB data to BrandData format
+  const brands: BrandData[] = summariesData.map((item: any) => {
     let blocks = [];
     let excerpt = "";
     try {
@@ -24,7 +22,6 @@ export default async function DashboardPage() {
       }
     } catch (e) {
       console.error(e);
-      // Fallback format if python drops a raw string block
       blocks = [{
         type: "info",
         title: "AI 요약 내용",
@@ -40,32 +37,44 @@ export default async function DashboardPage() {
       instagram_id: target_accounts?.instagram_id || "",
       updated_at: new Date(target_accounts?.last_scraped_at || item.created_at).toLocaleDateString("ko-KR", { timeZone: "Asia/Seoul" }),
       excerpt,
-      blocks
+      blocks,
     };
   });
 
   return (
-    <main className="flex-grow max-w-7xl mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8 w-full">
-      <Sidebar />
-      <section className="lg:col-span-8 space-y-6">
-        <div className="flex justify-between items-center mb-2">
-          <h2 className="font-display text-2xl font-bold text-primary dark:text-amber-500 flex items-center gap-2">
-            최신 AI 요약 정보
-            <RealtimeSubscriber />
+    <>
+      <PublicHeader />
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <div className="mb-6 sm:mb-8">
+          <h2 className="font-display text-xl sm:text-2xl font-bold text-text-main-light dark:text-text-main-dark mb-1">
+            🍞 베이커리 소식
           </h2>
-
+          <p className="text-sm text-text-sub-light dark:text-text-sub-dark">
+            AI가 분석한 최신 베이커리 소식을 확인하세요
+          </p>
         </div>
 
-        {parsedSummaries.map((summary) => (
-          <SummaryCard key={summary.id} data={summary} />
-        ))}
-        {parsedSummaries.length === 0 && (
-          <div className="text-center p-10 text-stone-500 bg-surface-light dark:bg-surface-dark rounded-xl border border-stone-200 dark:border-stone-700">
-            <span className="material-symbols-outlined text-4xl mb-2 opacity-50">data_alert</span>
-            <p>수집된 요약 정보가 없습니다.</p>
+        {brands.length > 0 ? (
+          <div className="space-y-2">
+            {brands.map((brand) => (
+              <BrandSection key={brand.id} data={brand} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-16 text-stone-500">
+            <span className="material-symbols-outlined text-5xl mb-3 opacity-40">data_alert</span>
+            <p className="text-lg font-medium">아직 수집된 소식이 없습니다</p>
+            <p className="text-sm mt-1">관리자가 베이커리를 등록하면 AI가 자동으로 소식을 수집합니다</p>
           </div>
         )}
-      </section>
-    </main>
+      </main>
+
+      {/* 하단 푸터 */}
+      <footer className="border-t border-stone-200 dark:border-stone-700 py-6 mt-auto">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 text-center text-xs text-stone-400 dark:text-stone-500">
+          <p>다빵 캘린더 • AI가 수집한 베이커리 소식</p>
+        </div>
+      </footer>
+    </>
   );
 }
