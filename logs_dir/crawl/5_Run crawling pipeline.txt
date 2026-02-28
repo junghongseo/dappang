@@ -1,0 +1,57 @@
+﻿2026-02-27T23:33:00.9637893Z ##[group]Run python execution/run_crawl.py
+2026-02-27T23:33:00.9638261Z [36;1mpython execution/run_crawl.py[0m
+2026-02-27T23:33:00.9690659Z shell: /usr/bin/bash -e {0}
+2026-02-27T23:33:00.9690914Z env:
+2026-02-27T23:33:00.9691175Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.12/x64
+2026-02-27T23:33:00.9691815Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.12/x64/lib/pkgconfig
+2026-02-27T23:33:00.9692266Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.12/x64
+2026-02-27T23:33:00.9692656Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.12/x64
+2026-02-27T23:33:00.9693028Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.12/x64
+2026-02-27T23:33:00.9693406Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.12/x64/lib
+2026-02-27T23:33:00.9694079Z   RAPIDAPI_KEY: ***
+
+2026-02-27T23:33:00.9694405Z   GEMINI_API_KEY: ***
+2026-02-27T23:33:00.9694965Z   NEXT_PUBLIC_SUPABASE_URL: ***
+2026-02-27T23:33:00.9695415Z   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY: ***
+2026-02-27T23:33:00.9695713Z ##[endgroup]
+2026-02-27T23:35:11.6288537Z [run_crawl] is_crawling set to True
+2026-02-27T23:35:11.6290313Z [run_crawl] Starting scrape_instagram...
+2026-02-27T23:35:11.6291668Z Processing account: mudscone (ID: 6335193b-c051-4c12-979e-2d6b5779e349)
+2026-02-27T23:35:11.6292571Z API Call authorized. Calls used: 1/50000. Remaining: 49999
+2026-02-27T23:35:11.6293766Z ERROR: API request failed for mudscone. 403 Client Error: Forbidden for url: https://instagram-scraper-stable-api.p.rapidapi.com/get_ig_user_posts.php
+2026-02-27T23:35:11.6295277Z Processing account: bbangssunimom (ID: be732285-4a8c-446f-a881-b1556977b435)
+2026-02-27T23:35:11.6296148Z API Call authorized. Calls used: 2/50000. Remaining: 49998
+2026-02-27T23:35:11.6297539Z ERROR: API request failed for bbangssunimom. 403 Client Error: Forbidden for url: https://instagram-scraper-stable-api.p.rapidapi.com/get_ig_user_posts.php
+2026-02-27T23:35:11.6298583Z Processing account: yundar_bakery (ID: b7f07740-4e31-48ed-8272-cf25f4a98065)
+2026-02-27T23:35:11.6299122Z API Call authorized. Calls used: 3/50000. Remaining: 49997
+2026-02-27T23:35:11.6299999Z ERROR: API request failed for yundar_bakery. 403 Client Error: Forbidden for url: https://instagram-scraper-stable-api.p.rapidapi.com/get_ig_user_posts.php
+2026-02-27T23:35:11.6300957Z Processing account: bothcone (ID: a6d52dee-15c4-4dc6-a612-cd8060631871)
+2026-02-27T23:35:11.6301715Z API Call authorized. Calls used: 4/50000. Remaining: 49996
+2026-02-27T23:35:11.6302531Z ERROR: API request failed for bothcone. 403 Client Error: Forbidden for url: https://instagram-scraper-stable-api.p.rapidapi.com/get_ig_user_posts.php
+2026-02-27T23:35:11.6303311Z Processing account: panhonesta (ID: 6e22dee9-b554-4f35-bc2b-86fbc845b517)
+2026-02-27T23:35:11.6303751Z API Call authorized. Calls used: 5/50000. Remaining: 49995
+2026-02-27T23:35:11.6304464Z ERROR: API request failed for panhonesta. 403 Client Error: Forbidden for url: https://instagram-scraper-stable-api.p.rapidapi.com/get_ig_user_posts.php
+2026-02-27T23:35:11.6305253Z Processing account: mangnut2 (ID: f1d520cb-67c9-465c-9671-0f9e40aad816)
+2026-02-27T23:35:11.6305675Z API Call authorized. Calls used: 6/50000. Remaining: 49994
+2026-02-27T23:35:11.6306367Z ERROR: API request failed for mangnut2. 403 Client Error: Forbidden for url: https://instagram-scraper-stable-api.p.rapidapi.com/get_ig_user_posts.php
+2026-02-27T23:35:11.6307137Z Processing account: bbang_vegan_studio (ID: 262b19c1-6f00-43a8-aa72-582cc3acd0c5)
+2026-02-27T23:35:11.6307582Z API Call authorized. Calls used: 7/50000. Remaining: 49993
+2026-02-27T23:35:11.6308295Z ERROR: API request failed for bbang_vegan_studio. 403 Client Error: Forbidden for url: https://instagram-scraper-stable-api.p.rapidapi.com/get_ig_user_posts.php
+2026-02-27T23:35:11.6308973Z All scraping tasks completed.
+2026-02-27T23:35:11.6309226Z [run_crawl] Starting summarize_posts...
+2026-02-27T23:35:11.6309618Z INFO: No posts found for bbangssunimom. Updating timestamp and skipping summary.
+2026-02-27T23:35:11.6310031Z Sending prompt to Gemini for yundar_bakery...
+2026-02-27T23:35:11.6310785Z SUCCESS: Generated and saved summary for yundar_bakery
+2026-02-27T23:35:11.6311104Z Sending prompt to Gemini for bothcone...
+2026-02-27T23:35:11.6311604Z SUCCESS: Generated and saved summary for bothcone
+2026-02-27T23:35:11.6311936Z Sending prompt to Gemini for panhonesta...
+2026-02-27T23:35:11.6312240Z SUCCESS: Generated and saved summary for panhonesta
+2026-02-27T23:35:11.6312549Z Sending prompt to Gemini for mangnut2...
+2026-02-27T23:35:11.6312839Z SUCCESS: Generated and saved summary for mangnut2
+2026-02-27T23:35:11.6313153Z Sending prompt to Gemini for bbang_vegan_studio...
+2026-02-27T23:35:11.6313505Z SUCCESS: Generated and saved summary for bbang_vegan_studio
+2026-02-27T23:35:11.6313836Z Sending prompt to Gemini for mudscone...
+2026-02-27T23:35:11.6314130Z SUCCESS: Generated and saved summary for mudscone
+2026-02-27T23:35:11.6314614Z All summaries generated successfully.
+2026-02-27T23:35:11.6314895Z [run_crawl] All tasks completed successfully.
+2026-02-27T23:35:11.6315183Z [run_crawl] is_crawling set to False

@@ -1,0 +1,55 @@
+﻿2026-02-27T16:06:10.8253510Z ##[group]Run python execution/run_crawl.py
+2026-02-27T16:06:10.8253878Z [36;1mpython execution/run_crawl.py[0m
+2026-02-27T16:06:10.8305227Z shell: /usr/bin/bash -e {0}
+2026-02-27T16:06:10.8305478Z env:
+2026-02-27T16:06:10.8305738Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.12/x64
+2026-02-27T16:06:10.8306175Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.12/x64/lib/pkgconfig
+2026-02-27T16:06:10.8306604Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.12/x64
+2026-02-27T16:06:10.8306981Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.12/x64
+2026-02-27T16:06:10.8307344Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.12/x64
+2026-02-27T16:06:10.8307719Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.12/x64/lib
+2026-02-27T16:06:10.8308428Z   RAPIDAPI_KEY: ***
+
+2026-02-27T16:06:10.8308734Z   GEMINI_API_KEY: ***
+2026-02-27T16:06:10.8309274Z   NEXT_PUBLIC_SUPABASE_URL: ***
+2026-02-27T16:06:10.8309702Z   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY: ***
+2026-02-27T16:06:10.8309994Z ##[endgroup]
+2026-02-27T16:06:14.2126958Z Traceback (most recent call last):
+2026-02-27T16:06:14.2138157Z   File "/home/runner/work/dappang/dappang/execution/run_crawl.py", line 41, in main
+2026-02-27T16:06:14.2138795Z     scrape_instagram_all()
+2026-02-27T16:06:14.2139407Z   File "/home/runner/work/dappang/dappang/execution/scrape_instagram.py", line 106, in scrape_instagram_all
+2026-02-27T16:06:14.2140128Z     response = requests.post(RAPIDAPI_ENDPOINT, data=payload, headers=headers)
+2026-02-27T16:06:14.2140615Z                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-02-27T16:06:14.2141224Z   File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/requests/api.py", line 115, in post
+2026-02-27T16:06:14.2141821Z     return request("post", url, data=data, json=json, **kwargs)
+2026-02-27T16:06:14.2142180Z            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-02-27T16:06:14.2142783Z   File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/requests/api.py", line 59, in request
+2026-02-27T16:06:14.2143378Z     return session.request(method=method, url=url, **kwargs)
+2026-02-27T16:06:14.2143722Z            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-02-27T16:06:14.2144301Z   File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/requests/sessions.py", line 589, in request
+2026-02-27T16:06:14.2144845Z     resp = self.send(prep, **send_kwargs)
+2026-02-27T16:06:14.2146716Z            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-02-27T16:06:14.2147308Z   File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/requests/sessions.py", line 703, in send
+2026-02-27T16:06:14.2147872Z     r = adapter.send(request, **kwargs)
+2026-02-27T16:06:14.2148133Z         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-02-27T16:06:14.2148666Z   File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/requests/adapters.py", line 644, in send
+2026-02-27T16:06:14.2149208Z     resp = conn.urlopen(
+2026-02-27T16:06:14.2149434Z            ^^^^^^^^^^^^^
+2026-02-27T16:06:14.2149965Z   File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/urllib3/connectionpool.py", line 787, in urlopen
+2026-02-27T16:06:14.2150540Z     response = self._make_request(
+2026-02-27T16:06:14.2150787Z                ^^^^^^^^^^^^^^^^^^^
+2026-02-27T16:06:14.2151350Z   File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/urllib3/connectionpool.py", line 493, in _make_request
+2026-02-27T16:06:14.2151903Z     conn.request(
+2026-02-27T16:06:14.2152393Z   File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/urllib3/connection.py", line 499, in request
+2026-02-27T16:06:14.2152921Z     self.putheader(header, value)
+2026-02-27T16:06:14.2153463Z   File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/urllib3/connection.py", line 413, in putheader
+2026-02-27T16:06:14.2154014Z     super().putheader(header, *values)
+2026-02-27T16:06:14.2154491Z   File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/http/client.py", line 1316, in putheader
+2026-02-27T16:06:14.2155642Z     raise ValueError('Invalid header value %r' % (values[i],))
+2026-02-27T16:06:14.2156353Z ValueError: Invalid header value b'***\n'
+2026-02-27T16:06:15.0409510Z [run_crawl] is_crawling set to True
+2026-02-27T16:06:15.0409959Z [run_crawl] Starting scrape_instagram...
+2026-02-27T16:06:15.0410410Z Processing account: bbangssunimom (ID: be732285-4a8c-446f-a881-b1556977b435)
+2026-02-27T16:06:15.0410931Z API Call authorized. Calls used: 1/50000. Remaining: 49999
+2026-02-27T16:06:15.0411828Z [run_crawl] ERROR during crawl pipeline: Invalid header value b'***\n'
+2026-02-27T16:06:15.0412255Z [run_crawl] is_crawling set to False

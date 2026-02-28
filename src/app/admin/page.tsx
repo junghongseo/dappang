@@ -38,6 +38,7 @@ export default async function AdminDashboardPage() {
             id: item.id,
             bakery_name: target_accounts?.bakery_name || "Unknown Bakery",
             instagram_id: target_accounts?.instagram_id || "",
+            shopping_mall_url: target_accounts?.shopping_mall_url || null,
             updated_at: new Date(target_accounts?.last_scraped_at || item.created_at).toLocaleDateString("ko-KR", { timeZone: "Asia/Seoul" }),
             excerpt,
             blocks

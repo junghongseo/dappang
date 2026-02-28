@@ -1,0 +1,21 @@
+﻿2026-02-27T16:05:59.7702224Z ##[group]Run actions/setup-python@v5
+2026-02-27T16:05:59.7702825Z with:
+2026-02-27T16:05:59.7703202Z   python-version: 3.12
+2026-02-27T16:05:59.7703638Z   cache: pip
+2026-02-27T16:05:59.7704034Z   check-latest: false
+2026-02-27T16:05:59.7704608Z   token: ***
+2026-02-27T16:05:59.7705223Z   update-environment: true
+2026-02-27T16:05:59.7705709Z   allow-prereleases: false
+2026-02-27T16:05:59.7706161Z   freethreaded: false
+2026-02-27T16:05:59.7706582Z ##[endgroup]
+2026-02-27T16:05:59.9415643Z ##[group]Installed versions
+2026-02-27T16:05:59.9510689Z Successfully set up CPython (3.12.12)
+2026-02-27T16:05:59.9511978Z ##[endgroup]
+2026-02-27T16:05:59.9999131Z [command]/opt/hostedtoolcache/Python/3.12.12/x64/bin/pip cache dir
+2026-02-27T16:06:00.3409001Z /home/runner/.cache/pip
+2026-02-27T16:06:00.4996769Z Cache hit for: setup-python-Linux-x64-24.04-Ubuntu-python-3.12.12-pip-112597c0f2724244454c53ecb71ea5b89e784ed0704efe7d66a665724a872346
+2026-02-27T16:06:00.8416732Z Received 26741955 of 26741955 (100.0%), 87.6 MBs/sec
+2026-02-27T16:06:00.8417821Z Cache Size: ~26 MB (26741955 B)
+2026-02-27T16:06:00.8445714Z [command]/usr/bin/tar -xf /home/runner/work/_temp/6475aded-aaed-4f22-9767-15b2aab64c9c/cache.tzst -P -C /home/runner/work/dappang/dappang --use-compress-program unzstd
+2026-02-27T16:06:00.9145321Z Cache restored successfully
+2026-02-27T16:06:00.9207538Z Cache restored from key: setup-python-Linux-x64-24.04-Ubuntu-python-3.12.12-pip-112597c0f2724244454c53ecb71ea5b89e784ed0704efe7d66a665724a872346

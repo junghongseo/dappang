@@ -1,0 +1,72 @@
+﻿2026-02-27T23:32:49.1623315Z ##[group]Run actions/checkout@v4
+2026-02-27T23:32:49.1624169Z with:
+2026-02-27T23:32:49.1624617Z   repository: junghongseo/dappang
+2026-02-27T23:32:49.1625286Z   token: ***
+2026-02-27T23:32:49.1625691Z   ssh-strict: true
+2026-02-27T23:32:49.1626100Z   ssh-user: git
+2026-02-27T23:32:49.1626514Z   persist-credentials: true
+2026-02-27T23:32:49.1626983Z   clean: true
+2026-02-27T23:32:49.1627390Z   sparse-checkout-cone-mode: true
+2026-02-27T23:32:49.1627882Z   fetch-depth: 1
+2026-02-27T23:32:49.1628285Z   fetch-tags: false
+2026-02-27T23:32:49.1628693Z   show-progress: true
+2026-02-27T23:32:49.1629113Z   lfs: false
+2026-02-27T23:32:49.1629494Z   submodules: false
+2026-02-27T23:32:49.1629904Z   set-safe-directory: true
+2026-02-27T23:32:49.1630555Z ##[endgroup]
+2026-02-27T23:32:49.2730643Z Syncing repository: junghongseo/dappang
+2026-02-27T23:32:49.2732741Z ##[group]Getting Git version info
+2026-02-27T23:32:49.2733488Z Working directory is '/home/runner/work/dappang/dappang'
+2026-02-27T23:32:49.2734442Z [command]/usr/bin/git version
+2026-02-27T23:32:49.2813243Z git version 2.53.0
+2026-02-27T23:32:49.2839312Z ##[endgroup]
+2026-02-27T23:32:49.2854345Z Temporarily overriding HOME='/home/runner/work/_temp/2446c437-17b6-4096-80e2-e31ec7f67e2c' before making global git config changes
+2026-02-27T23:32:49.2855729Z Adding repository directory to the temporary git global config as a safe directory
+2026-02-27T23:32:49.2867033Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/dappang/dappang
+2026-02-27T23:32:49.2907175Z Deleting the contents of '/home/runner/work/dappang/dappang'
+2026-02-27T23:32:49.2910768Z ##[group]Initializing the repository
+2026-02-27T23:32:49.2915288Z [command]/usr/bin/git init /home/runner/work/dappang/dappang
+2026-02-27T23:32:49.3046176Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-02-27T23:32:49.3047241Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-02-27T23:32:49.3048207Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-02-27T23:32:49.3049270Z hint: call:
+2026-02-27T23:32:49.3049664Z hint:
+2026-02-27T23:32:49.3050323Z hint: 	git config --global init.defaultBranch <name>
+2026-02-27T23:32:49.3051220Z hint:
+2026-02-27T23:32:49.3052317Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-02-27T23:32:49.3053821Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-02-27T23:32:49.3055197Z hint:
+2026-02-27T23:32:49.3055954Z hint: 	git branch -m <name>
+2026-02-27T23:32:49.3056831Z hint:
+2026-02-27T23:32:49.3057955Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-02-27T23:32:49.3059861Z Initialized empty Git repository in /home/runner/work/dappang/dappang/.git/
+2026-02-27T23:32:49.3066065Z [command]/usr/bin/git remote add origin https://github.com/junghongseo/dappang
+2026-02-27T23:32:49.3102638Z ##[endgroup]
+2026-02-27T23:32:49.3104005Z ##[group]Disabling automatic garbage collection
+2026-02-27T23:32:49.3107685Z [command]/usr/bin/git config --local gc.auto 0
+2026-02-27T23:32:49.3137627Z ##[endgroup]
+2026-02-27T23:32:49.3138913Z ##[group]Setting up auth
+2026-02-27T23:32:49.3145339Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-02-27T23:32:49.3177792Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-02-27T23:32:49.3545001Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-02-27T23:32:49.3577729Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-02-27T23:32:49.3822284Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-02-27T23:32:49.3859687Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-02-27T23:32:49.4118064Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-02-27T23:32:49.4158464Z ##[endgroup]
+2026-02-27T23:32:49.4159196Z ##[group]Fetching the repository
+2026-02-27T23:32:49.4170784Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +3ee61398392cfd1171a81bd6fee6144b0e36753a:refs/remotes/origin/main
+2026-02-27T23:32:49.6780252Z From https://github.com/junghongseo/dappang
+2026-02-27T23:32:49.6781758Z  * [new ref]         3ee61398392cfd1171a81bd6fee6144b0e36753a -> origin/main
+2026-02-27T23:32:49.6814982Z ##[endgroup]
+2026-02-27T23:32:49.6816207Z ##[group]Determining the checkout info
+2026-02-27T23:32:49.6817913Z ##[endgroup]
+2026-02-27T23:32:49.6822945Z [command]/usr/bin/git sparse-checkout disable
+2026-02-27T23:32:49.6866412Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-02-27T23:32:49.6893145Z ##[group]Checking out the ref
+2026-02-27T23:32:49.6897680Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-02-27T23:32:49.6997211Z Switched to a new branch 'main'
+2026-02-27T23:32:49.7000240Z branch 'main' set up to track 'origin/main'.
+2026-02-27T23:32:49.7007300Z ##[endgroup]
+2026-02-27T23:32:49.7042286Z [command]/usr/bin/git log -1 --format=%H
+2026-02-27T23:32:49.7065379Z 3ee61398392cfd1171a81bd6fee6144b0e36753a
