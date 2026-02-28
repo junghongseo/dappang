@@ -112,28 +112,28 @@ function DetailModal({ block, bakeryName, onClose }: { block: BlockContent | nul
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className={`p-4 border-b border-stone-100 dark:border-stone-800 flex justify-between items-center ${style.bg}`}>
-                    <div className="flex items-center gap-2">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${style.accent}`}>
-                            <span className={`material-symbols-outlined ${style.text}`}>{style.icon}</span>
+                    <div className="flex items-center gap-3">
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center ${style.accent}`}>
+                            <span className={`material-symbols-outlined text-2xl ${style.text}`}>{style.icon}</span>
                         </div>
                         <div>
-                            <p className="text-xs text-stone-500 dark:text-stone-400 font-medium tracking-tight">{bakeryName}</p>
-                            <h3 className={`font-bold text-lg leading-tight ${style.text}`}>{block.title}</h3>
+                            <p className="text-sm text-stone-500 dark:text-stone-400 font-medium tracking-tight mb-0.5">{bakeryName}</p>
+                            <h3 className={`font-bold text-xl leading-tight ${style.text}`}>{block.title}</h3>
                         </div>
                     </div>
                     <button
                         onClick={onClose}
-                        className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-stone-500 dark:text-stone-400"
+                        className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-stone-500 dark:text-stone-400"
                     >
-                        <span className="material-symbols-outlined">close</span>
+                        <span className="material-symbols-outlined text-xl">close</span>
                     </button>
                 </div>
 
-                <div className="p-5 overflow-y-auto max-h-[60vh]">
+                <div className="p-6 overflow-y-auto max-h-[60vh]">
                     {block.items && block.items.length > 0 ? (
-                        <ul className="space-y-3 text-[15px] leading-relaxed text-stone-700 dark:text-stone-300">
+                        <ul className="space-y-4 text-base leading-relaxed text-stone-700 dark:text-stone-300">
                             {block.items.map((item, i) => (
-                                <li key={i} className="flex items-start gap-2">
+                                <li key={i} className="flex items-start gap-2.5">
                                     <span className="text-stone-400 dark:text-stone-500 mt-1 flex-shrink-0">•</span>
                                     <span dangerouslySetInnerHTML={{ __html: formatLinksToIcons(item) }} />
                                 </li>
@@ -141,7 +141,7 @@ function DetailModal({ block, bakeryName, onClose }: { block: BlockContent | nul
                         </ul>
                     ) : (
                         <p
-                            className="text-[15px] leading-relaxed text-stone-700 dark:text-stone-300"
+                            className="text-base leading-relaxed text-stone-700 dark:text-stone-300"
                             dangerouslySetInnerHTML={{ __html: block.text ? formatLinksToIcons(block.text) : "" }}
                         />
                     )}
@@ -152,11 +152,10 @@ function DetailModal({ block, bakeryName, onClose }: { block: BlockContent | nul
     );
 }
 
-/** 모바일 가로 스크롤 갤러리 카드 (정사각형 썸네일형) */
+/** 3차 개선: 모바일 가로 스크롤 갤러리 카드 (아주 큰 정사각형 썸네일형) */
 function GalleryCard({ block, onClick }: { block: BlockContent, onClick: () => void }) {
     const style = getBlockStyle(block.type);
 
-    // 썸네일에 노출할 프리뷰 텍스트 추출 (첫 번째 항목이나 텍스트의 앞부분)
     let previewText = "";
     if (block.items && block.items.length > 0) {
         previewText = stripHtml(block.items[0]);
@@ -169,55 +168,56 @@ function GalleryCard({ block, onClick }: { block: BlockContent, onClick: () => v
     return (
         <button
             onClick={onClick}
-            className={`flex-shrink-0 w-36 h-36 sm:w-40 sm:h-40 snap-start rounded-2xl border ${style.border} ${style.bg} p-4 flex flex-col items-center justify-center text-center cursor-pointer hover:-translate-y-1 transition-transform relative group text-left`}
+            className={`flex-shrink-0 w-44 h-44 sm:w-48 sm:h-48 snap-start rounded-[20px] border ${style.border} ${style.bg} p-5 flex flex-col items-center justify-center text-center cursor-pointer hover:-translate-y-1 transition-transform relative group text-left shadow-sm`}
         >
-            <div className={`w-12 h-12 rounded-full mb-3 flex items-center justify-center ${style.accent}`}>
-                <span className={`material-symbols-outlined text-2xl ${style.text}`}>
+            <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full mb-3 flex items-center justify-center ${style.accent}`}>
+                <span className={`material-symbols-outlined text-3xl sm:text-4xl ${style.text}`}>
                     {style.icon}
                 </span>
             </div>
 
-            <h4 className={`text-sm font-bold ${style.text} line-clamp-1 mb-1.5 w-full text-center`}>
+            <h4 className={`text-base sm:text-lg font-bold ${style.text} line-clamp-1 mb-2 w-full text-center tracking-tight`}>
                 {block.title}
             </h4>
 
-            <p className="text-[11px] sm:text-xs text-stone-600 dark:text-stone-400 line-clamp-2 w-full leading-snug">
+            <p className="text-xs sm:text-sm text-stone-600 dark:text-stone-400 line-clamp-2 w-full leading-snug">
                 {previewText}
             </p>
 
             {hasMore ? (
-                <div className="absolute top-2 right-2 flex items-center gap-0.5 text-[10px] font-bold text-stone-400 dark:text-stone-500 bg-black/5 dark:bg-white/10 px-1.5 py-0.5 rounded-full">
+                <div className="absolute top-3 right-3 flex items-center gap-0.5 text-xs font-bold text-stone-500 dark:text-stone-400 bg-black/5 dark:bg-white/10 px-2 py-0.5 rounded-full">
                     +{block.items.length - 1}
                 </div>
             ) : null}
 
-            <div className={`absolute inset-0 border-2 border-transparent group-hover:${style.border.replace('border-', 'border-')} rounded-2xl opacity-0 hover:opacity-100 transition-opacity pointer-events-none`}></div>
+            <div className={`absolute inset-0 border-[3px] border-transparent group-hover:${style.border.replace('border-', 'border-')} rounded-[20px] opacity-0 hover:opacity-100 transition-opacity pointer-events-none`}></div>
         </button>
     );
 }
 
-/** 데스크톱용 펼쳐진 블록 카드 */
+/** 3차 개선: 데스크톱용 펼쳐진 블록 카드 */
 function ExpandedBlock({ block }: { block: BlockContent }) {
     const style = getBlockStyle(block.type);
 
     return (
-        <div className={`${style.bg} p-4 rounded-lg border ${style.border}`}>
-            <h4 className={`font-bold ${style.text} mb-2 flex items-center gap-2`}>
-                <span className="material-symbols-outlined text-sm">{style.icon}</span>
+        <div className={`${style.bg} p-5 rounded-xl border ${style.border} shadow-sm`}>
+            <h4 className={`font-bold text-lg ${style.text} mb-3 flex items-center gap-2`}>
+                <span className="material-symbols-outlined text-xl">{style.icon}</span>
                 {block.title}
             </h4>
             {block.items && block.items.length > 0 ? (
-                <ul className="list-disc list-inside text-sm text-stone-700 dark:text-stone-300 space-y-1">
+                <ul className="list-disc list-inside text-[15px] sm:text-base text-stone-700 dark:text-stone-300 space-y-1.5">
                     {block.items.map((item, i) => (
                         <li
                             key={i}
                             dangerouslySetInnerHTML={{ __html: formatLinksToIcons(item) }}
+                            className="leading-relaxed"
                         />
                     ))}
                 </ul>
             ) : (
                 <p
-                    className="text-sm text-stone-700 dark:text-stone-300"
+                    className="text-[15px] sm:text-base text-stone-700 dark:text-stone-300 leading-relaxed"
                     dangerouslySetInnerHTML={{ __html: block.text ? formatLinksToIcons(block.text) : "" }}
                 />
             )}
@@ -237,8 +237,8 @@ export function BrandSection({ data }: { data: BrandData }) {
 
         const handleScroll = () => {
             const scrollLeft = container.scrollLeft;
-            // w-36 is 144px, gap-3 is 12px
-            const cardWidth = 144 + 12;
+            // w-44 is 176px, gap-4 is 16px
+            const cardWidth = 176 + 16;
             const index = Math.round(scrollLeft / cardWidth);
             setActiveIndex(Math.min(index, totalCards - 1));
         };
@@ -250,40 +250,54 @@ export function BrandSection({ data }: { data: BrandData }) {
     if (data.blocks.length === 0) return null;
 
     return (
-        <section className="mb-6 sm:mb-8">
-            {/* 브랜드 헤더 */}
-            <div className="flex items-center justify-between mb-3 px-1">
-                <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-full bg-stone-200 dark:bg-stone-700 flex items-center justify-center flex-shrink-0 border border-stone-300 dark:border-stone-600">
-                        <span className="material-symbols-outlined text-stone-500 dark:text-stone-400 text-lg">
+        <section className="mb-10 sm:mb-14">
+            {/* 브랜드 헤더 (3차 개선: 인스타 아이콘 브랜드명 옆으로 이동) */}
+            <div className="flex items-center mb-4 px-1">
+                <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-full bg-stone-200 dark:bg-stone-700 flex items-center justify-center flex-shrink-0 border border-stone-300 dark:border-stone-600 shadow-sm">
+                        <span className="material-symbols-outlined text-stone-500 dark:text-stone-400 text-2xl sm:text-3xl">
                             storefront
                         </span>
                     </div>
                     <div>
-                        <h3 className="font-display font-bold text-lg text-text-main-light dark:text-text-main-dark">
-                            {data.bakery_name}
-                        </h3>
-                        <p className="text-xs text-stone-400 dark:text-stone-500">
+                        <div className="flex items-center gap-1.5 sm:gap-2">
+                            <h3 className="font-display font-bold text-xl sm:text-2xl text-text-main-light dark:text-text-main-dark">
+                                {data.bakery_name}
+                            </h3>
+                            <Link
+                                href={`https://instagram.com/${data.instagram_id}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-pink-500 dark:text-pink-400 hover:text-pink-600 flex items-center transition-colors bg-pink-50 hover:bg-pink-100 dark:bg-pink-900/20 dark:hover:bg-pink-900/40 p-1.5 rounded-full"
+                                title="인스타그램 방문"
+                            >
+                                <span className="material-symbols-outlined text-xl sm:text-2xl">camera</span>
+                            </Link>
+                        </div>
+                        <p className="text-xs sm:text-sm text-stone-500 dark:text-stone-400 mt-1">
                             {data.updated_at} 업데이트
                         </p>
                     </div>
                 </div>
-                <Link
-                    href={`https://instagram.com/${data.instagram_id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-pink-500 dark:text-pink-400 hover:text-pink-600 flex items-center gap-1 text-xs font-medium"
-                >
-                    <span className="material-symbols-outlined text-sm">open_in_new</span>
-                    <span className="hidden sm:inline">인스타그램</span>
-                </Link>
             </div>
+
+            {/* 발췌문 (3차 개선: 갤러리/그리드 상단으로 이동) */}
+            {data.excerpt && (
+                <div className="mb-5 sm:mb-6 px-1">
+                    <div className="p-4 bg-stone-50 dark:bg-stone-800/50 rounded-xl text-sm sm:text-[15px] text-stone-700 dark:text-stone-300 border border-stone-100 dark:border-stone-800 leading-relaxed break-keep shadow-sm">
+                        <span className="text-stone-400 mr-1.5 font-serif font-bold opacity-60">"</span>
+                        {data.excerpt}
+                        <span className="text-stone-400 ml-1.5 font-serif font-bold opacity-60">"</span>
+                        <div className="block mt-2 text-xs text-stone-400 text-right">— AI 소식 요약 모음</div>
+                    </div>
+                </div>
+            )}
 
             {/* 모바일: 가로 스크롤 갤러리 */}
             <div className="md:hidden">
                 <div
                     ref={scrollRef}
-                    className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-3 -mx-4 px-4 scrollbar-hide overscroll-x-contain touch-pan-x"
+                    className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-5 -mx-4 px-4 scrollbar-hide overscroll-x-contain touch-pan-x"
                 >
                     {data.blocks.map((block, idx) => (
                         <GalleryCard key={idx} block={block} onClick={() => setSelectedBlock(block)} />
@@ -291,12 +305,12 @@ export function BrandSection({ data }: { data: BrandData }) {
                 </div>
                 {/* 인디케이터 점 */}
                 {totalCards > 1 && (
-                    <div className="flex justify-center gap-1.5 mt-1">
+                    <div className="flex justify-center gap-1.5 mt-1 pb-2">
                         {data.blocks.map((_, idx) => (
                             <div
                                 key={idx}
-                                className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${idx === activeIndex
-                                    ? "bg-primary dark:bg-amber-500 w-4"
+                                className={`w-2 h-2 rounded-full transition-all duration-300 ${idx === activeIndex
+                                    ? "bg-primary dark:bg-amber-500 w-5"
                                     : "bg-stone-300 dark:bg-stone-600"
                                     }`}
                             />
@@ -306,19 +320,11 @@ export function BrandSection({ data }: { data: BrandData }) {
             </div>
 
             {/* 데스크톱: 펼쳐진 그리드 */}
-            <div className="hidden md:grid md:grid-cols-2 gap-3">
+            <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {data.blocks.map((block, idx) => (
                     <ExpandedBlock key={idx} block={block} />
                 ))}
             </div>
-
-            {/* 발췌문 */}
-            {data.excerpt && (
-                <div className="mt-4 p-3 bg-stone-50 dark:bg-stone-800/50 rounded-lg text-sm text-stone-500 dark:text-stone-400 italic border border-stone-100 dark:border-stone-800">
-                    &ldquo;{data.excerpt}&rdquo;{" "}
-                    <span className="text-stone-400 not-italic">— 게시물 발췌</span>
-                </div>
-            )}
 
             {/* 상세 내용 모달 (모바일 공통 적용) */}
             <DetailModal
