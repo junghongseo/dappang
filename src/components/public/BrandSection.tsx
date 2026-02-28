@@ -217,7 +217,7 @@ function DesktopCard({ block }: { block: BlockContent }) {
     return (
         <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className={`w-full ${style.bg} p-6 rounded-[20px] border ${style.border} shadow-sm flex flex-col text-left group hover:shadow-md transition-all cursor-pointer relative focus:outline-none`}
+            className={`w-full min-h-[256px] ${style.bg} p-6 rounded-[20px] border ${style.border} shadow-sm flex flex-col text-left group hover:shadow-md transition-all cursor-pointer relative focus:outline-none`}
         >
             <div className="flex items-center gap-3 mb-4 shrink-0 w-full">
                 <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${style.accent}`}>
