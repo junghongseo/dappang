@@ -67,7 +67,13 @@ def check_and_increment_budget():
     return True, usage[month_key]
 
 def fetch_target_accounts():
-    response = supabase.table("target_accounts").select("id, instagram_id").eq("status", "active").execute()
+    from datetime import datetime, timedelta, timezone
+    one_hour_ago = (datetime.now(timezone.utc) - timedelta(hours=1)).isoformat()
+    response = supabase.table("target_accounts") \
+        .select("id, instagram_id") \
+        .eq("status", "active") \
+        .or_(f"last_scraped_at.is.null,last_scraped_at.lt.{one_hour_ago}") \
+        .execute()
     return response.data
 
 def scrape_instagram_all():

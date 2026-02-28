@@ -156,8 +156,15 @@ async def summarize_posts_async():
         
     client = genai.Client(api_key=api_key)
 
-    # 2. Fetch all active targets
-    targets_response = supabase.table("target_accounts").select("id, instagram_id").eq("status", "active").execute()
+    # 2. Fetch all active targets that haven't been scraped in the last hour
+    from datetime import timedelta
+    one_hour_ago = (datetime.now(timezone.utc) - timedelta(hours=1)).isoformat()
+    targets_response = supabase.table("target_accounts") \
+        .select("id, instagram_id") \
+        .eq("status", "active") \
+        .or_(f"last_scraped_at.is.null,last_scraped_at.lt.{one_hour_ago}") \
+        .execute()
+        
     targets = targets_response.data
     
     if not targets:
