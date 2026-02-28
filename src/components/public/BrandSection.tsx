@@ -284,7 +284,7 @@ export function BrandSection({ data }: { data: BrandData }) {
             {/* 발췌문 (3차 개선: 갤러리/그리드 상단으로 이동) */}
             {data.excerpt && (
                 <div className="mb-5 sm:mb-6 px-1 w-full max-w-full overflow-hidden">
-                    <div className="p-4 bg-stone-50 dark:bg-stone-800/50 rounded-xl text-sm sm:text-[15px] text-stone-700 dark:text-stone-300 border border-stone-100 dark:border-stone-800 leading-relaxed break-words whitespace-normal shadow-sm">
+                    <div className="p-4 bg-stone-50 dark:bg-stone-800/50 rounded-xl text-sm sm:text-[15px] text-stone-700 dark:text-stone-300 border border-stone-100 dark:border-stone-800 leading-relaxed break-words break-all whitespace-normal shadow-sm">
                         <span className="text-stone-400 mr-1.5 font-serif font-bold opacity-60">"</span>
                         {data.excerpt}
                         <span className="text-stone-400 ml-1.5 font-serif font-bold opacity-60">"</span>
@@ -294,10 +294,10 @@ export function BrandSection({ data }: { data: BrandData }) {
             )}
 
             {/* 모바일: 가로 스크롤 갤러리 */}
-            <div className="md:hidden w-full">
+            <div className="md:hidden w-[100vw] relative left-1/2 -ml-[50vw]">
                 <div
                     ref={scrollRef}
-                    className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-5 -mx-4 px-4 scrollbar-hide [-webkit-overflow-scrolling:touch]"
+                    className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-5 px-4 scrollbar-hide [-webkit-overflow-scrolling:touch]"
                 >
                     {data.blocks.map((block, idx) => (
                         <GalleryCard key={idx} block={block} onClick={() => setSelectedBlock(block)} />
