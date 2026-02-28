@@ -93,6 +93,7 @@ def summarize_posts():
 [출력 형식 가이드 (반드시 유효한 JSON 형식으로 출력할 것)]
 당신은 시스템 앱의 AI 파싱 엔진입니다. 반드시 아래의 JSON 포맷으로 렌더링 가능한 구조체만 답하세요. 
 블록 타입은 "news", "event", "sale", "holiday", "info" 중 하나여야 합니다. 텍스트 내부의 강조 표시는 <strong> 태그를 사용해도 됩니다.
+★가장 중요★: 각 항목(items)의 내용 끝에는 반드시 해당 원문의 실제 링크 주소를 [https://www.instagram.com/p/...] 형태로 붙여주세요. "게시물 링크"라는 글자 대신 실제 URL 주소를 넣어야 합니다.
 
 ```json
 {{
@@ -102,7 +103,7 @@ def summarize_posts():
       "type": "news",
       "title": "신메뉴 소식",
       "items": [
-        "시즌 한정 <strong>감 타르트</strong> 출시 [게시물 1 링크]"
+        "시즌 한정 <strong>감 타르트</strong> 출시 [https://www.instagram.com/p/ABCDE12345/]"
       ]
     }}
   ]
