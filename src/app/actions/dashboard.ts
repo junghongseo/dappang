@@ -42,7 +42,8 @@ export async function fetchAiSummaries() {
       target_accounts (
         id,
         bakery_name,
-        instagram_id
+        instagram_id,
+        last_scraped_at
       )
     `)
         .order("created_at", { ascending: false });
