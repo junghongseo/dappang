@@ -11,6 +11,7 @@ import Link from "next/link";
 const formSchema = z.object({
     bakeryName: z.string().min(1, "베이커리 이름을 입력해주세요."),
     instagramId: z.string().min(1, "인스타그램 아이디를 입력해주세요."),
+    shoppingMallUrl: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -29,6 +30,7 @@ export function AddBakeryForm() {
         defaultValues: {
             bakeryName: "",
             instagramId: "",
+            shoppingMallUrl: "",
         },
     });
 
@@ -100,6 +102,32 @@ export function AddBakeryForm() {
                 )}
             </div>
 
+            <div className="space-y-2">
+                <label
+                    className="block text-sm font-semibold text-text-main-light dark:text-stone-300"
+                    htmlFor="shoppingMallUrl"
+                >
+                    온라인 쇼핑몰 URL (선택)
+                </label>
+                <div className="relative">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-text-sub-light dark:text-stone-400">
+                        <span className="material-symbols-outlined text-[20px]">
+                            local_mall
+                        </span>
+                    </div>
+                    <input
+                        {...register("shoppingMallUrl")}
+                        className="block w-full rounded-lg border border-stone-200 dark:border-stone-700 bg-surface-light dark:bg-stone-800 py-3 pl-10 pr-3 text-text-main-light dark:text-stone-200 placeholder:text-stone-400 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none sm:text-sm shadow-sm transition-shadow"
+                        id="shoppingMallUrl"
+                        placeholder="예: https://smartstore.naver.com/..."
+                        type="url"
+                        disabled={isPending}
+                    />
+                </div>
+                {errors.shoppingMallUrl && (
+                    <p className="text-red-500 text-xs">{errors.shoppingMallUrl.message}</p>
+                )}
+            </div>
 
             {errorMsg && (
                 <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm border border-red-200">

@@ -7,6 +7,7 @@ import { verifyAdminSession } from "@/utils/auth";
 export async function addBakeryAction(data: {
     bakeryName: string;
     instagramId: string;
+    shoppingMallUrl?: string;
 }) {
     const isAuthenticated = await verifyAdminSession();
     if (!isAuthenticated) {
@@ -19,6 +20,7 @@ export async function addBakeryAction(data: {
         {
             bakery_name: data.bakeryName,
             instagram_id: data.instagramId.replace("@", ""),
+            shopping_mall_url: data.shoppingMallUrl || null,
             status: "active",
         },
     ]);

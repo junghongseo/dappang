@@ -22,7 +22,7 @@ export async function deleteBakeryAction(id: string) {
     return { success: true };
 }
 
-export async function editBakeryAction(id: string, newName: string, newInstagramId: string) {
+export async function editBakeryAction(id: string, newName: string, newInstagramId: string, newShoppingMallUrl?: string) {
     const isAuthenticated = await verifyAdminSession();
     if (!isAuthenticated) {
         return { success: false, error: "관리자 인증이 필요합니다." };
@@ -32,7 +32,8 @@ export async function editBakeryAction(id: string, newName: string, newInstagram
 
     const { error } = await supabase.from("target_accounts").update({
         bakery_name: newName,
-        instagram_id: newInstagramId.replace("@", "")
+        instagram_id: newInstagramId.replace("@", ""),
+        shopping_mall_url: newShoppingMallUrl || null
     }).eq("id", id);
 
     if (error) {

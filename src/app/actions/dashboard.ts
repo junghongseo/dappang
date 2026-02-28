@@ -7,6 +7,7 @@ export interface TargetAccountData {
     id: string;
     bakery_name: string;
     instagram_id: string;
+    shopping_mall_url: string | null;
     status: "active" | "syncing" | "paused";
     last_scraped_at: string | null;
 }
@@ -17,7 +18,7 @@ export async function fetchTargetAccounts(): Promise<TargetAccountData[]> {
 
     const { data, error } = await supabase
         .from("target_accounts")
-        .select("id, bakery_name, instagram_id, status, last_scraped_at")
+        .select("id, bakery_name, instagram_id, shopping_mall_url, status, last_scraped_at")
         .order("created_at", { ascending: false });
 
     if (error || !data) {
@@ -43,6 +44,7 @@ export async function fetchAiSummaries() {
         id,
         bakery_name,
         instagram_id,
+        shopping_mall_url,
         last_scraped_at
       )
     `)

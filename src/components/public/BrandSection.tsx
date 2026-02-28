@@ -15,6 +15,7 @@ export interface BrandData {
     id: string;
     bakery_name: string;
     instagram_id: string;
+    shopping_mall_url: string | null;
     updated_at: string;
     blocks: BlockContent[];
     excerpt?: string;
@@ -262,7 +263,7 @@ export function BrandSection({ data }: { data: BrandData }) {
 
     return (
         <section className="mb-10 sm:mb-14">
-            {/* 브랜드 헤더 (3차 개선: 인스타 아이콘 브랜드명 옆으로 이동) */}
+            {/* 브랜드 헤더 (3차+6차 개선: 인스타 커스텀 SVG 및 쇼핑몰 링크 적용) */}
             <div className="flex items-center mb-4 px-1">
                 <div className="flex items-center gap-3">
                     <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-full bg-stone-200 dark:bg-stone-700 flex items-center justify-center flex-shrink-0 border border-stone-300 dark:border-stone-600 shadow-sm">
@@ -275,17 +276,43 @@ export function BrandSection({ data }: { data: BrandData }) {
                             <h3 className="font-display font-bold text-xl sm:text-2xl text-text-main-light dark:text-text-main-dark">
                                 {data.bakery_name}
                             </h3>
+
+                            {/* 인스타그램 링크 (커스텀 SVG 아이콘 적용) */}
                             <Link
                                 href={`https://instagram.com/${data.instagram_id}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-pink-500 dark:text-pink-400 hover:text-pink-600 flex items-center transition-colors bg-pink-50 hover:bg-pink-100 dark:bg-pink-900/20 dark:hover:bg-pink-900/40 p-1.5 rounded-full"
+                                className="flex items-center transition-transform hover:scale-110 p-1"
                                 title="인스타그램 방문"
                             >
-                                <span className="material-symbols-outlined text-xl sm:text-2xl">camera</span>
+                                <svg viewBox="0 0 24 24" className="w-6 h-6 sm:w-7 sm:h-7" xmlns="http://www.w3.org/2000/svg">
+                                    <defs>
+                                        <linearGradient id="ig-grad" x1="0%" y1="100%" x2="100%" y2="0%">
+                                            <stop offset="0%" stopColor="#f09433" />
+                                            <stop offset="25%" stopColor="#e6683c" />
+                                            <stop offset="50%" stopColor="#dc2743" />
+                                            <stop offset="75%" stopColor="#cc2366" />
+                                            <stop offset="100%" stopColor="#bc1888" />
+                                        </linearGradient>
+                                    </defs>
+                                    <path fill="url(#ig-grad)" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm3.98-10.869a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+                                </svg>
                             </Link>
+
+                            {/* 쇼핑몰 링크 (데이터가 존재할 때만 표시) */}
+                            {data.shopping_mall_url && (
+                                <Link
+                                    href={data.shopping_mall_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-200 flex items-center transition-colors bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 p-[7px] sm:p-2 rounded-full shadow-sm border border-stone-200 dark:border-stone-700"
+                                    title="온라인 쇼핑몰 방문"
+                                >
+                                    <span className="material-symbols-outlined text-[20px] sm:text-[22px]">local_mall</span>
+                                </Link>
+                            )}
                         </div>
-                        <p className="text-xs sm:text-sm text-stone-500 dark:text-stone-400 mt-1">
+                        <p className="text-xs sm:text-sm text-stone-500 dark:text-stone-400 mt-0.5">
                             {data.updated_at} 업데이트
                         </p>
                     </div>
