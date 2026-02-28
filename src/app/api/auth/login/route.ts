@@ -15,9 +15,9 @@ export async function POST(request: NextRequest) {
 
         const adminPassword = process.env.ADMIN_PASSWORD;
         if (!adminPassword) {
-            console.error("[auth] ADMIN_PASSWORD environment variable is not set");
+            console.error("[auth] ADMIN_PASSWORD environment variable is not set (Current keys:)", Object.keys(process.env));
             return NextResponse.json(
-                { success: false, error: "서버 설정 오류입니다." },
+                { success: false, error: "서버 설정 오류입니다. (관리자 암호 미설정)" },
                 { status: 500 }
             );
         }
