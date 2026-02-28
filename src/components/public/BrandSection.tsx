@@ -294,10 +294,10 @@ export function BrandSection({ data }: { data: BrandData }) {
             )}
 
             {/* 모바일: 가로 스크롤 갤러리 */}
-            <div className="md:hidden">
+            <div className="md:hidden w-full">
                 <div
                     ref={scrollRef}
-                    className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-5 -mx-4 px-4 scrollbar-hide"
+                    className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-5 -mx-4 px-4 scrollbar-hide [-webkit-overflow-scrolling:touch]"
                 >
                     {data.blocks.map((block, idx) => (
                         <GalleryCard key={idx} block={block} onClick={() => setSelectedBlock(block)} />
