@@ -387,7 +387,7 @@ export function BrandSection({ data }: { data: BrandData }) {
             </div>
 
             {/* 데스크톱: 펼쳐진 그리드 (고정 폭 클릭형 카드로 변경) */}
-            <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-5 px-1">
+            <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-5 px-1 items-start">
                 {data.blocks.map((block, idx) => (
                     <DesktopCard key={idx} block={block} />
                 ))}
