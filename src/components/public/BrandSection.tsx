@@ -297,7 +297,7 @@ export function BrandSection({ data }: { data: BrandData }) {
             <div className="md:hidden">
                 <div
                     ref={scrollRef}
-                    className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-5 -mx-4 px-4 scrollbar-hide overscroll-x-contain touch-pan-x"
+                    className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-5 -mx-4 px-4 scrollbar-hide"
                 >
                     {data.blocks.map((block, idx) => (
                         <GalleryCard key={idx} block={block} onClick={() => setSelectedBlock(block)} />
