@@ -3,6 +3,8 @@
 import { useTheme } from "next-themes";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { fetchTargetAccounts, forceRefreshDashboard } from "@/app/actions/dashboard";
+import { TargetAccountData } from "@/app/actions/dashboard";
 
 function getRelativeTimeString(date: Date | null) {
     if (!date) return '업데이트 없음';
@@ -43,7 +45,11 @@ export function Header() {
             isCrawlingRef.current = nowRunning;
 
             if (data.lastScrapedAt) {
-                setLastUpdated(new Date(data.lastScrapedAt));
+                const newLastUpdated = new Date(data.lastScrapedAt);
+                // Only update if the date has actually changed to prevent unnecessary re-renders
+                if (!lastUpdated || newLastUpdated.getTime() !== lastUpdated.getTime()) {
+                    setLastUpdated(newLastUpdated);
+                }
             }
 
             // 크롤링이 활성화된 상태면 폴링 시작, 끝났으면 중지
@@ -51,13 +57,13 @@ export function Header() {
                 startPolling();
             } else if (wasRunning && !nowRunning) {
                 stopPolling();
-                // 크롤링이 종료되면 Next.js App Router의 데이터를 새로고침하여 화면 UI를 업데이트
-                router.refresh();
+                // 서브 액션을 호출하여 Next.js 서버(캐시)와 UI를 강제 새로고침
+                await forceRefreshDashboard();
             }
         } catch (e) {
             console.error('Failed to fetch crawl status:', e);
         }
-    }, [router]);
+    }, [lastUpdated]); // Added lastUpdated to dependencies to ensure comparison is accurate
 
     const isCrawlingRef = useRef(false);
 

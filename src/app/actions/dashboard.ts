@@ -54,3 +54,10 @@ export async function fetchAiSummaries() {
 
     return data;
 }
+
+import { revalidatePath } from "next/cache";
+
+export async function forceRefreshDashboard() {
+    noStore();
+    revalidatePath("/", "layout");
+}
