@@ -23,7 +23,10 @@ export async function POST() {
             }, { status: 409 });
         }
 
-        await supabase.from('system_status').upsert({ id: 'global', is_crawling: true });
+        const { error: updateError } = await supabase.from('system_status').update({ is_crawling: true }).eq('id', 'global');
+        if (updateError) {
+            console.error("[crawl] Supabase update error:", updateError);
+        }
 
         const owner = 'junghongseo';
         const repo = 'dappang';
