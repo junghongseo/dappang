@@ -195,33 +195,44 @@ function GalleryCard({ block, onClick }: { block: BlockContent, onClick: () => v
     );
 }
 
-/** 3차 개선: 데스크톱용 펼쳐진 블록 카드 */
-function ExpandedBlock({ block }: { block: BlockContent }) {
+/** 4차 개선: 데스크톱용 클릭 가능한 고정 규격 카드 */
+function DesktopCard({ block, onClick }: { block: BlockContent, onClick: () => void }) {
     const style = getBlockStyle(block.type);
 
+    let previewText = "";
+    if (block.items && block.items.length > 0) {
+        previewText = block.items.map(stripHtml).join(" • ");
+    } else if (block.text) {
+        previewText = stripHtml(block.text);
+    }
+
     return (
-        <div className={`${style.bg} p-5 rounded-xl border ${style.border} shadow-sm`}>
-            <h4 className={`font-bold text-lg ${style.text} mb-3 flex items-center gap-2`}>
-                <span className="material-symbols-outlined text-xl">{style.icon}</span>
-                {block.title}
-            </h4>
-            {block.items && block.items.length > 0 ? (
-                <ul className="list-disc list-inside text-[15px] sm:text-base text-stone-700 dark:text-stone-300 space-y-1.5">
-                    {block.items.map((item, i) => (
-                        <li
-                            key={i}
-                            dangerouslySetInnerHTML={{ __html: formatLinksToIcons(item) }}
-                            className="leading-relaxed"
-                        />
-                    ))}
-                </ul>
-            ) : (
-                <p
-                    className="text-[15px] sm:text-base text-stone-700 dark:text-stone-300 leading-relaxed"
-                    dangerouslySetInnerHTML={{ __html: block.text ? formatLinksToIcons(block.text) : "" }}
-                />
-            )}
-        </div>
+        <button
+            onClick={onClick}
+            className={`w-full h-64 ${style.bg} p-6 rounded-[20px] border ${style.border} shadow-sm flex flex-col text-left group hover:-translate-y-1 hover:shadow-md transition-all cursor-pointer relative overflow-hidden focus:outline-none`}
+        >
+            <div className="flex items-center gap-3 mb-4 shrink-0">
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center ${style.accent}`}>
+                    <span className={`material-symbols-outlined text-2xl ${style.text}`}>{style.icon}</span>
+                </div>
+                <h4 className={`font-bold text-[17px] ${style.text} line-clamp-1 flex-1 tracking-tight`}>
+                    {block.title}
+                </h4>
+            </div>
+
+            <p className="text-stone-600 dark:text-stone-300 text-[15px] sm:text-base leading-relaxed line-clamp-4 relative z-10 w-full mb-2">
+                {previewText}
+            </p>
+
+            <div className="mt-auto w-full flex justify-end shrink-0 relative z-20">
+                <div className={`flex items-center gap-1.5 text-sm font-bold ${style.text} opacity-60 group-hover:opacity-100 transition-opacity bg-black/5 dark:bg-white/10 px-3 py-1.5 rounded-full`}>
+                    <span className="material-symbols-outlined text-[18px]">open_in_new</span>
+                    <span>상세보기</span>
+                </div>
+            </div>
+
+            <div className={`absolute inset-0 border-[3px] border-transparent group-hover:${style.border.replace('border-', 'border-')} rounded-[20px] opacity-0 hover:opacity-100 transition-opacity pointer-events-none`}></div>
+        </button>
     );
 }
 
@@ -319,10 +330,10 @@ export function BrandSection({ data }: { data: BrandData }) {
                 )}
             </div>
 
-            {/* 데스크톱: 펼쳐진 그리드 */}
-            <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {/* 데스크톱: 펼쳐진 그리드 (고정 폭 클릭형 카드로 변경) */}
+            <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-5 px-1">
                 {data.blocks.map((block, idx) => (
-                    <ExpandedBlock key={idx} block={block} />
+                    <DesktopCard key={idx} block={block} onClick={() => setSelectedBlock(block)} />
                 ))}
             </div>
 
