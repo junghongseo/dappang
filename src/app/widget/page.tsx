@@ -22,7 +22,7 @@ export default function WidgetPage() {
             const res = await fetch("/api/widget?t=" + Date.now()); // 캐시 방지용 쿼리
             const data = await res.json();
             if (Array.isArray(data) && data.length > 0) {
-                setItems(data.slice(0, 3));
+                setItems(data.slice(0, 6));
             }
         } catch (error) {
             console.error("Widget fetch error:", error);

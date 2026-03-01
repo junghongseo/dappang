@@ -69,8 +69,8 @@ export async function GET() {
             });
         }
 
-        // 4. 무작위 셔플 후 최대 5개 반환
-        const shuffledData = allUniqueData.sort(() => Math.random() - 0.5).slice(0, 5);
+        // 4. 무작위 셔플 후 최대 6개 반환
+        const shuffledData = allUniqueData.sort(() => Math.random() - 0.5).slice(0, 6);
 
         const response = NextResponse.json(shuffledData);
         response.headers.set("Cache-Control", "no-store, max-age=0");
