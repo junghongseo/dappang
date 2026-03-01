@@ -63,24 +63,18 @@ export default function WidgetPage() {
     };
 
     return (
-        <div className="h-full w-full bg-white flex flex-col p-2 space-y-2.5 overflow-hidden">
+        <div className="h-full w-full bg-white flex flex-col p-2 space-y-2 overflow-hidden border-y border-stone-100">
             {items.map((item) => (
-                <div key={item.id} className="flex items-center gap-2.5 w-full border-b border-stone-100/50 pb-2 last:border-0 last:pb-0">
-                    <span className={`px-1.5 py-0.5 rounded-md text-[9px] font-bold border flex-shrink-0 leading-tight ${getBadgeStyle(item.type)}`}>
+                <div key={item.id} className="flex items-center gap-2 w-full border-b border-stone-50 pb-1.5 last:border-0 last:pb-0">
+                    <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold border flex-shrink-0 ${getBadgeStyle(item.type)}`}>
                         {item.category}
                     </span>
 
-                    <div className="flex flex-col flex-1 gap-0.5 overflow-hidden">
-                        <div className="flex items-center gap-1.5 overflow-hidden">
-                            <span className="text-[10px] font-extrabold text-stone-600 truncate">
-                                {item.bakery_name}
-                            </span>
-                            <span className="w-0.5 h-0.5 bg-stone-300 rounded-full flex-shrink-0"></span>
-                            <span className="text-[9px] text-stone-400 whitespace-nowrap">
-                                실시간 소식
-                            </span>
-                        </div>
-                        <span className="text-[11px] text-stone-800 truncate leading-snug">
+                    <div className="flex flex-col flex-1 overflow-hidden">
+                        <span className="text-[10px] font-bold text-stone-500 whitespace-nowrap">
+                            {item.bakery_name}
+                        </span>
+                        <span className="text-[11px] text-stone-800 truncate">
                             {item.excerpt}
                         </span>
                     </div>
@@ -88,9 +82,9 @@ export default function WidgetPage() {
                     <a
                         href="https://dappang.junghong-seo.workers.dev"
                         target="_parent"
-                        className="text-[9px] font-bold text-orange-500 hover:text-orange-600 whitespace-nowrap ml-1 flex items-center group flex-shrink-0 self-center"
+                        className="text-[9px] text-stone-400 hover:text-stone-600 whitespace-nowrap ml-1 flex-shrink-0 self-end mb-0.5"
                     >
-                        보기<span className="ml-0.5 text-[8px] group-hover:translate-x-0.5 transition-transform">▶</span>
+                        보기
                     </a>
                 </div>
             ))}
