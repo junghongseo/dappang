@@ -63,32 +63,46 @@ export default function WidgetPage() {
     };
 
     return (
-        <div className="w-full bg-white flex flex-col p-2.5 space-y-3 overflow-hidden">
-            {items.map((item) => (
-                <div key={item.id} className="flex items-center gap-2.5 w-full border-b border-stone-50 pb-2.5 last:border-0 last:pb-0">
-                    <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold border flex-shrink-0 ${getBadgeStyle(item.type)}`}>
-                        {item.category}
-                    </span>
-
-                    <div className="flex flex-col flex-1 overflow-hidden">
-                        <span className="text-[10px] font-bold text-stone-500 whitespace-nowrap">
-                            {item.bakery_name}
-                        </span>
-                        <span className="text-[11px] text-stone-800 truncate">
-                            {item.excerpt}
-                        </span>
-                    </div>
-
-                    <a
-                        href="https://dappang.junghong-seo.workers.dev"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[10px] text-stone-400 hover:text-stone-600 font-medium whitespace-nowrap ml-1 flex-shrink-0"
-                    >
-                        보기
-                    </a>
+        <div className="w-full bg-white flex flex-col overflow-hidden">
+            {/* Header Section */}
+            <div className="px-4 py-3 border-b border-stone-100 bg-stone-50/30">
+                <div className="flex items-center gap-2">
+                    <span className="text-lg">🍞</span>
+                    <h1 className="text-[15px] font-black text-stone-800 tracking-tight">다빵 캘린더</h1>
                 </div>
-            ))}
+                <p className="text-[10px] text-stone-500 font-medium mt-0.5 ml-7">
+                    식단빵 베이커리 소식 및 주문일정 수집 AI
+                </p>
+            </div>
+
+            {/* List Section */}
+            <div className="p-3 space-y-3">
+                {items.map((item) => (
+                    <div key={item.id} className="flex items-center gap-2.5 w-full border-b border-stone-50 pb-3 last:border-0 last:pb-0">
+                        <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold border flex-shrink-0 ${getBadgeStyle(item.type)}`}>
+                            {item.category}
+                        </span>
+
+                        <div className="flex flex-col flex-1 overflow-hidden">
+                            <span className="text-[10px] font-bold text-stone-500 whitespace-nowrap">
+                                {item.bakery_name}
+                            </span>
+                            <span className="text-[11px] text-stone-800 truncate leading-snug">
+                                {item.excerpt}
+                            </span>
+                        </div>
+
+                        <a
+                            href="https://dappang.junghong-seo.workers.dev"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[10px] text-stone-400 hover:text-stone-600 font-medium whitespace-nowrap ml-1 flex-shrink-0"
+                        >
+                            보기
+                        </a>
+                    </div>
+                ))}
+            </div>
 
             <style jsx global>{`
         body { margin: 0; padding: 0; background: white; -webkit-font-smoothing: antialiased; }
