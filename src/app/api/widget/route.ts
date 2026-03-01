@@ -44,7 +44,9 @@ export async function GET() {
         const formattedData = [];
 
         for (const item of (summariesData || [])) {
-            const bakeryName = item.target_accounts?.bakery_name || "베이커리";
+            const accounts = item.target_accounts as any;
+            const bakeryName = (Array.isArray(accounts) ? accounts[0]?.bakery_name : accounts?.bakery_name) || "베이커리";
+
             if (seenBakeries.has(bakeryName)) continue;
             seenBakeries.add(bakeryName);
 
@@ -63,7 +65,7 @@ export async function GET() {
                 excerpt: summaryObj.excerpt || "최신 게시물을 확인하세요.",
                 type: firstBlock.type,
                 category: firstBlock.title,
-                updated_at: item.target_accounts?.last_scraped_at || item.created_at
+                updated_at: (Array.isArray(accounts) ? accounts[0]?.last_scraped_at : accounts?.last_scraped_at) || item.created_at
             });
 
             if (formattedData.length >= 5) break; // 최대 5개까지만
