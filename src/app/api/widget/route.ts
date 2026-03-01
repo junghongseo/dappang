@@ -20,7 +20,7 @@ export async function GET() {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     try {
-        // 2. 최신 요약 데이터 가져오기
+        // 2. 최신 요약 데이터 가져오기 (넉넉하게 가져와서 중복 제거)
         const { data: summariesData, error } = await supabase
             .from("ai_summaries")
             .select(`
@@ -35,12 +35,19 @@ export async function GET() {
       `)
             .eq("status", "success")
             .order("created_at", { ascending: false })
-            .limit(10); // 슬라이드용이므로 최근 10개만
+            .limit(20);
 
         if (error) throw error;
 
-        // 3. 위젯 형식에 맞게 데이터 가공
-        const formattedData = summariesData?.map((item: any) => {
+        // 3. 중복 빵집 제거 및 데이터 가공
+        const seenBakeries = new Set();
+        const formattedData = [];
+
+        for (const item of (summariesData || [])) {
+            const bakeryName = item.target_accounts?.bakery_name || "베이커리";
+            if (seenBakeries.has(bakeryName)) continue;
+            seenBakeries.add(bakeryName);
+
             let summaryObj: any = {};
             try {
                 summaryObj = typeof item.summary === 'string' ? JSON.parse(item.summary) : item.summary;
@@ -48,20 +55,22 @@ export async function GET() {
                 summaryObj = { excerpt: "새로운 소식이 있습니다.", blocks: [] };
             }
 
-            // 첫 번째 블록의 정보를 카테고리로 활용
             const firstBlock = summaryObj.blocks?.[0] || { type: 'info', title: '소식' };
 
-            return {
+            formattedData.push({
                 id: item.id,
-                bakery_name: item.target_accounts?.bakery_name || "베이커리",
+                bakery_name: bakeryName,
                 excerpt: summaryObj.excerpt || "최신 게시물을 확인하세요.",
                 type: firstBlock.type,
                 category: firstBlock.title,
                 updated_at: item.target_accounts?.last_scraped_at || item.created_at
-            };
-        }) || [];
+            });
+
+            if (formattedData.length >= 5) break; // 최대 5개까지만
+        }
 
         const response = NextResponse.json(formattedData);
+        response.headers.set("Cache-Control", "no-store, max-age=0"); // 캐시 방지
         return setCorsHeaders(response);
 
     } catch (error) {
