@@ -118,7 +118,7 @@ export function Header() {
                             다빵 캘린더
                         </h1>
                         <p className="text-xs text-text-sub-light dark:text-text-sub-dark font-medium uppercase tracking-wider">
-                            식당빵 베이커리 소식 및 주문일정 수집 AI
+                            식단빵 베이커리 소식 및 주문일정 수집 AI
                         </p>
                     </div>
                 </div>
