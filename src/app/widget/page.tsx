@@ -63,9 +63,9 @@ export default function WidgetPage() {
     };
 
     return (
-        <div className="h-full w-full bg-white flex flex-col p-2 space-y-2 overflow-hidden border-y border-stone-100">
+        <div className="w-full bg-white flex flex-col p-2.5 space-y-3 overflow-hidden">
             {items.map((item) => (
-                <div key={item.id} className="flex items-center gap-2 w-full border-b border-stone-50 pb-1.5 last:border-0 last:pb-0">
+                <div key={item.id} className="flex items-center gap-2.5 w-full border-b border-stone-50 pb-2.5 last:border-0 last:pb-0">
                     <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold border flex-shrink-0 ${getBadgeStyle(item.type)}`}>
                         {item.category}
                     </span>
@@ -81,8 +81,9 @@ export default function WidgetPage() {
 
                     <a
                         href="https://dappang.junghong-seo.workers.dev"
-                        target="_parent"
-                        className="text-[9px] text-stone-400 hover:text-stone-600 whitespace-nowrap ml-1 flex-shrink-0 self-end mb-0.5"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[10px] text-stone-400 hover:text-stone-600 font-medium whitespace-nowrap ml-1 flex-shrink-0"
                     >
                         보기
                     </a>

@@ -41,7 +41,7 @@ export async function GET() {
 
         // 3. 중복 빵집 제거 및 데이터 가공
         const seenBakeries = new Set();
-        const formattedData = [];
+        const allUniqueData = [];
 
         for (const item of (summariesData || [])) {
             const accounts = item.target_accounts as any;
@@ -59,7 +59,7 @@ export async function GET() {
 
             const firstBlock = summaryObj.blocks?.[0] || { type: 'info', title: '소식' };
 
-            formattedData.push({
+            allUniqueData.push({
                 id: item.id,
                 bakery_name: bakeryName,
                 excerpt: summaryObj.excerpt || "최신 게시물을 확인하세요.",
@@ -67,12 +67,13 @@ export async function GET() {
                 category: firstBlock.title,
                 updated_at: (Array.isArray(accounts) ? accounts[0]?.last_scraped_at : accounts?.last_scraped_at) || item.created_at
             });
-
-            if (formattedData.length >= 5) break; // 최대 5개까지만
         }
 
-        const response = NextResponse.json(formattedData);
-        response.headers.set("Cache-Control", "no-store, max-age=0"); // 캐시 방지
+        // 4. 무작위 셔플 후 최대 5개 반환
+        const shuffledData = allUniqueData.sort(() => Math.random() - 0.5).slice(0, 5);
+
+        const response = NextResponse.json(shuffledData);
+        response.headers.set("Cache-Control", "no-store, max-age=0");
         return setCorsHeaders(response);
 
     } catch (error) {
