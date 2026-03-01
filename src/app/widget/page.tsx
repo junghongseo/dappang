@@ -15,9 +15,7 @@ export const dynamic = 'force-dynamic';
 
 export default function WidgetPage() {
     const [items, setItems] = useState<WidgetItem[]>([]);
-    const [currentIndex, setCurrentIndex] = useState(0);
     const [loading, setLoading] = useState(true);
-    const [opacity, setOpacity] = useState(1);
 
     useEffect(() => {
         async function fetchData() {
@@ -25,7 +23,8 @@ export default function WidgetPage() {
                 const res = await fetch("/api/widget");
                 const data = await res.json();
                 if (Array.isArray(data) && data.length > 0) {
-                    setItems(data);
+                    // 최대 3개까지만 표시
+                    setItems(data.slice(0, 3));
                 }
             } catch (error) {
                 console.error("Widget fetch error:", error);
@@ -35,23 +34,6 @@ export default function WidgetPage() {
         }
         fetchData();
     }, []);
-
-    useEffect(() => {
-        if (items.length <= 1) return;
-
-        const interval = setInterval(() => {
-            // Fade out
-            setOpacity(0);
-
-            setTimeout(() => {
-                setCurrentIndex((prev) => (prev + 1) % items.length);
-                // Fade in
-                setOpacity(1);
-            }, 500); // fade out duration
-        }, 4000); // display duration
-
-        return () => clearInterval(interval);
-    }, [items]);
 
     if (loading) {
         return (
@@ -69,8 +51,6 @@ export default function WidgetPage() {
         );
     }
 
-    const currentItem = items[currentIndex];
-
     const getBadgeStyle = (type: string) => {
         switch (type) {
             case "news": return "bg-orange-50 text-orange-600 border-orange-100";
@@ -81,35 +61,34 @@ export default function WidgetPage() {
     };
 
     return (
-        <div className="h-screen w-full bg-white flex items-center px-3 overflow-hidden border-y border-stone-100">
-            <div
-                className="flex items-center gap-2 w-full transition-opacity duration-500 ease-in-out"
-                style={{ opacity }}
-            >
-                <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border flex-shrink-0 ${getBadgeStyle(currentItem.type)}`}>
-                    {currentItem.category}
-                </span>
+        <div className="h-full w-full bg-white flex flex-col justify-center gap-1.5 py-2 px-3 overflow-hidden border-y border-stone-100">
+            {items.map((item) => (
+                <div key={item.id} className="flex items-center gap-2 w-full">
+                    <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold border flex-shrink-0 ${getBadgeStyle(item.type)}`}>
+                        {item.category}
+                    </span>
 
-                <div className="flex items-baseline gap-2 overflow-hidden flex-1">
-                    <span className="text-[11px] font-bold text-stone-500 whitespace-nowrap">
-                        {currentItem.bakery_name}
-                    </span>
-                    <span className="text-[12px] text-stone-800 truncate">
-                        {currentItem.excerpt}
-                    </span>
+                    <div className="flex items-baseline gap-2 overflow-hidden flex-1">
+                        <span className="text-[10px] font-bold text-stone-500 whitespace-nowrap">
+                            {item.bakery_name}
+                        </span>
+                        <span className="text-[11px] text-stone-800 truncate">
+                            {item.excerpt}
+                        </span>
+                    </div>
+
+                    <a
+                        href="/"
+                        target="_parent"
+                        className="text-[9px] text-stone-400 hover:text-stone-600 whitespace-nowrap ml-1"
+                    >
+                        보기
+                    </a>
                 </div>
-
-                <a
-                    href="/"
-                    target="_parent"
-                    className="text-[10px] text-stone-400 hover:text-stone-600 whitespace-nowrap ml-1 flex items-center"
-                >
-                    보기 <span className="ml-0.5 text-[8px]">▶</span>
-                </a>
-            </div>
+            ))}
 
             <style jsx global>{`
-        body { margin: 0; padding: 0; overflow: hidden; }
+        body { margin: 0; padding: 0; overflow: hidden; background: white; }
       `}</style>
         </div>
     );
