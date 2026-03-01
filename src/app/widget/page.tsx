@@ -65,38 +65,38 @@ export default function WidgetPage() {
     return (
         <div className="w-full bg-white flex flex-col overflow-hidden">
             {/* Header Section */}
-            <div className="px-4 py-3 border-b border-stone-100 bg-stone-50/30">
-                <div className="flex items-center gap-2">
-                    <span className="text-lg">🍞</span>
-                    <h1 className="text-[15px] font-black text-stone-800 tracking-tight">다빵 캘린더</h1>
+            <div className="px-4 py-2.5 border-b border-stone-100 bg-stone-50/40">
+                <div className="flex items-center gap-1.5">
+                    <span className="text-base">🍞</span>
+                    <h1 className="text-[14px] font-extrabold text-stone-800 tracking-tight">다빵 캘린더</h1>
                 </div>
-                <p className="text-[10px] text-stone-500 font-medium mt-0.5 ml-7">
+                <p className="text-[9px] text-stone-500 font-medium mt-0.5 ml-6">
                     식단빵 베이커리 소식 및 주문일정 수집 AI
                 </p>
             </div>
 
             {/* List Section */}
-            <div className="p-3 space-y-3">
+            <div className="py-1 px-3 flex flex-col">
                 {items.map((item) => (
-                    <div key={item.id} className="flex items-center gap-2.5 w-full border-b border-stone-50 pb-3 last:border-0 last:pb-0">
-                        <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold border flex-shrink-0 ${getBadgeStyle(item.type)}`}>
+                    <div key={item.id} className="flex items-center gap-2.5 w-full border-b border-stone-50 py-2.5 last:border-0 last:pb-0">
+                        <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold border flex-shrink-0 leading-tight ${getBadgeStyle(item.type)}`}>
                             {item.category}
                         </span>
 
                         <div className="flex flex-col flex-1 overflow-hidden">
-                            <span className="text-[10px] font-bold text-stone-500 whitespace-nowrap">
+                            <span className="text-[10px] font-bold text-stone-600 truncate">
                                 {item.bakery_name}
                             </span>
-                            <span className="text-[11px] text-stone-800 truncate leading-snug">
+                            <span className="text-[11px] text-stone-800 truncate leading-tight mt-0.5">
                                 {item.excerpt}
                             </span>
                         </div>
 
                         <a
-                            href="https://dappang.junghong-seo.workers.dev"
+                            href="https://dappang.junghong-seo.workers.dev/"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-[10px] text-stone-400 hover:text-stone-600 font-medium whitespace-nowrap ml-1 flex-shrink-0"
+                            className="px-2 py-1 rounded-md text-[10px] bg-orange-500 text-white font-bold hover:bg-orange-600 transition-colors whitespace-nowrap ml-1 flex-shrink-0"
                         >
                             보기
                         </a>
