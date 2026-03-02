@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import {
     CalendarEvent,
@@ -36,7 +36,6 @@ interface EventBarSegment {
 function getEventBarsForWeek(
     weekDates: Date[],
     events: CalendarEvent[],
-    currentMonth: number,
 ): EventBarSegment[] {
     const bars: EventBarSegment[] = [];
 
@@ -62,38 +61,28 @@ function getEventBarsForWeek(
         const evStart = new Date(event.startDate.getFullYear(), event.startDate.getMonth(), event.startDate.getDate()).getTime();
         const evEnd = new Date(event.endDate.getFullYear(), event.endDate.getMonth(), event.endDate.getDate()).getTime();
 
-        const startCol = Math.max(
-            0,
-            weekDates.findIndex(d =>
-                new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime() >= evStart
-            )
-        );
+        const startCol = Math.max(0, weekDates.findIndex(d =>
+            new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime() >= evStart
+        ));
 
         let endCol = 6;
         for (let i = 6; i >= 0; i--) {
-            const dayTime = new Date(weekDates[i].getFullYear(), weekDates[i].getMonth(), weekDates[i].getDate()).getTime();
-            if (dayTime <= evEnd) {
+            if (new Date(weekDates[i].getFullYear(), weekDates[i].getMonth(), weekDates[i].getDate()).getTime() <= evEnd) {
                 endCol = i;
                 break;
             }
         }
-
         if (startCol > endCol) continue;
 
         let slot = 0;
-        while (true) {
+        while (slot <= 3) {
             let available = true;
             for (let col = startCol; col <= endCol; col++) {
-                if (usedSlots[col][slot]) {
-                    available = false;
-                    break;
-                }
+                if (usedSlots[col][slot]) { available = false; break; }
             }
             if (available) break;
             slot++;
-            if (slot > 3) break;
         }
-
         if (slot > 3) continue;
 
         for (let col = startCol; col <= endCol; col++) {
@@ -101,90 +90,57 @@ function getEventBarsForWeek(
             usedSlots[col][slot] = true;
         }
 
-        bars.push({
-            event,
-            startCol,
-            spanCols: endCol - startCol + 1,
-            row: slot,
-        });
+        bars.push({ event, startCol, spanCols: endCol - startCol + 1, row: slot });
     }
-
     return bars;
 }
 
-// ============================================
-// Helper: strip HTML + URLs for clean preview
-// ============================================
-function stripForPreview(text: string): string {
-    return text
-        .replace(/<[^>]*>/g, "")
-        .replace(/\[?https?:\/\/[^\s<\]\)]+\]?/g, "")
-        .replace(/\s+/g, " ")
-        .trim();
-}
 
 // ============================================
-// Event Detail Modal (shared between mobile calendar & brand cards)
+// Helper
 // ============================================
-function EventDetailModal({
-    event, onClose
-}: {
-    event: CalendarEvent; onClose: () => void;
-}) {
-    const typeIcons: Record<string, { bg: string; text: string; icon: string }> = {
+function stripForPreview(text: string): string {
+    return text.replace(/<[^>]*>/g, "").replace(/\[?https?:\/\/[^\s<\]\)]+\]?/g, "").replace(/\s+/g, " ").trim();
+}
+
+
+// ============================================
+// Event Detail Modal
+// ============================================
+function EventDetailModal({ event, onClose }: { event: CalendarEvent; onClose: () => void }) {
+    const typeStyles: Record<string, { bg: string; text: string; icon: string }> = {
         news: { bg: "bg-orange-50 dark:bg-orange-900/15", text: "text-orange-800 dark:text-orange-300", icon: "restaurant_menu" },
         event: { bg: "bg-purple-50 dark:bg-purple-900/15", text: "text-purple-800 dark:text-purple-300", icon: "event" },
         sale: { bg: "bg-green-50 dark:bg-green-900/15", text: "text-green-800 dark:text-green-300", icon: "local_offer" },
         holiday: { bg: "bg-red-50 dark:bg-red-900/15", text: "text-red-800 dark:text-red-300", icon: "schedule" },
         info: { bg: "bg-blue-50 dark:bg-blue-900/15", text: "text-blue-800 dark:text-blue-300", icon: "info" },
     };
-    const style = typeIcons[event.type] || typeIcons.info;
-
-    function formatLinksToIcons(text: string) {
-        if (!text) return "";
-        const regex = /<a\s+(?:[^>]*?\s+)?href=(['"])(.*?)\1[^>]*>.*?<\/a>|\[?(https?:\/\/[^\s<\]\)]+)\]?/gi;
-        return text.replace(regex, (match, quote, aHref, rawUrl) => {
-            const url = aHref || rawUrl;
-            if (!url) return match;
-            const cleanUrl = url.replace(/^[\[\(]/, '').replace(/[\]\)]$/, '');
-            return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-300 transition-colors mx-1 align-middle bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 rounded px-1.5 py-0.5 border border-stone-200 dark:border-stone-700" title="해당 링크 열기" onclick="event.stopPropagation()">
-                <span class="material-symbols-outlined text-[14px]">link</span>
-                <span class="text-[11px] font-bold ml-0.5">링크</span>
-            </a>`;
-        });
-    }
+    const s = typeStyles[event.type] || typeStyles.info;
 
     return createPortal(
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose}>
-            <div
-                className="w-full max-w-md bg-surface-light dark:bg-surface-dark rounded-2xl shadow-2xl border border-stone-200 dark:border-stone-700 overflow-hidden flex flex-col animate-in zoom-in-95 duration-200"
-                onClick={(e) => e.stopPropagation()}
-            >
-                <div className={`p-4 border-b border-stone-100 dark:border-stone-800 flex justify-between items-center ${style.bg}`}>
-                    <div className="flex items-center gap-3">
-                        <div className={`w-12 h-12 rounded-full flex items-center justify-center bg-white/50 dark:bg-black/10`}>
-                            <span className={`material-symbols-outlined text-2xl ${style.text}`}>{style.icon}</span>
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose}>
+            <div className="w-full sm:max-w-md bg-surface-light dark:bg-surface-dark rounded-t-2xl sm:rounded-2xl shadow-2xl border border-stone-200 dark:border-stone-700 overflow-hidden animate-in slide-in-from-bottom duration-300 max-h-[85vh] flex flex-col" onClick={e => e.stopPropagation()}>
+                <div className={`p-4 border-b border-stone-100 dark:border-stone-800 flex justify-between items-center ${s.bg}`}>
+                    <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center bg-white/50 dark:bg-black/10 flex-shrink-0">
+                            <span className={`material-symbols-outlined text-xl ${s.text}`}>{s.icon}</span>
                         </div>
-                        <div>
-                            <p className="text-sm text-stone-500 dark:text-stone-400 font-medium tracking-tight mb-0.5">{event.brandName}</p>
-                            <h3 className={`font-bold text-xl leading-tight ${style.text}`}>{event.title}</h3>
+                        <div className="min-w-0">
+                            <p className="text-xs text-stone-500 dark:text-stone-400 font-medium">{event.brandName}</p>
+                            <h3 className={`font-bold text-lg leading-tight truncate ${s.text}`}>{event.title}</h3>
                         </div>
                     </div>
-                    <button
-                        onClick={onClose}
-                        className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-stone-500 dark:text-stone-400"
-                    >
-                        <span className="material-symbols-outlined text-xl">close</span>
+                    <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 text-stone-500 flex-shrink-0">
+                        <span className="material-symbols-outlined">close</span>
                     </button>
                 </div>
-
-                <div className="p-6 overflow-y-auto max-h-[60vh]">
+                <div className="p-5 overflow-y-auto">
                     {event.items && event.items.length > 0 ? (
-                        <ul className="space-y-4 text-base leading-relaxed text-stone-700 dark:text-stone-300">
+                        <ul className="space-y-3 text-[15px] leading-relaxed text-stone-700 dark:text-stone-300">
                             {event.items.map((item, i) => (
-                                <li key={i} className="flex items-start gap-2.5">
-                                    <span className="text-stone-400 dark:text-stone-500 mt-1 flex-shrink-0">•</span>
-                                    <span dangerouslySetInnerHTML={{ __html: formatLinksToIcons(item) }} />
+                                <li key={i} className="flex items-start gap-2">
+                                    <span className="text-stone-400 mt-0.5 flex-shrink-0">•</span>
+                                    <span>{stripForPreview(item)}</span>
                                 </li>
                             ))}
                         </ul>
@@ -200,22 +156,12 @@ function EventDetailModal({
 
 
 // ============================================
-// Day Detail Panel (shown when clicking a date)
+// Day Detail Panel
 // ============================================
-
-function DayDetailPanel({
-    date,
-    events,
-    onClose,
-}: {
-    date: Date;
-    events: CalendarEvent[];
-    onClose: () => void;
-}) {
+function DayDetailPanel({ date, events, onClose }: { date: Date; events: CalendarEvent[]; onClose: () => void }) {
     const [detailEvent, setDetailEvent] = useState<CalendarEvent | null>(null);
     const dateStr = `${date.getMonth() + 1}월 ${date.getDate()}일 (${DAY_NAMES[date.getDay()]})`;
 
-    // Group events by brand
     const eventsByBrand = events.reduce<Record<string, CalendarEvent[]>>((acc, ev) => {
         if (!acc[ev.brandName]) acc[ev.brandName] = [];
         acc[ev.brandName].push(ev);
@@ -224,82 +170,45 @@ function DayDetailPanel({
 
     return (
         <>
-            <div className="bg-surface-light dark:bg-surface-dark rounded-2xl shadow-lg border border-stone-200 dark:border-stone-700 overflow-hidden animate-in slide-in-from-top-2 duration-200">
+            <div className="bg-surface-light dark:bg-surface-dark rounded-2xl shadow-lg border border-stone-200 dark:border-stone-700 overflow-hidden">
                 <div className="flex items-center justify-between p-3 sm:p-4 border-b border-stone-100 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/50">
                     <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-primary dark:text-amber-500 text-lg sm:text-xl">
-                            calendar_today
-                        </span>
-                        <h3 className="font-bold text-base sm:text-lg text-text-main-light dark:text-text-main-dark">
-                            {dateStr}
-                        </h3>
+                        <span className="material-symbols-outlined text-primary dark:text-amber-500 text-lg">calendar_today</span>
+                        <h3 className="font-bold text-base sm:text-lg text-text-main-light dark:text-text-main-dark">{dateStr}</h3>
                     </div>
-                    <button
-                        onClick={onClose}
-                        className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors"
-                    >
-                        <span className="material-symbols-outlined text-base sm:text-lg text-stone-500">close</span>
+                    <button onClick={onClose} className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-stone-200 dark:hover:bg-stone-700">
+                        <span className="material-symbols-outlined text-base text-stone-500">close</span>
                     </button>
                 </div>
-
-                <div className="p-3 sm:p-4 space-y-3 sm:space-y-4 max-h-72 overflow-y-auto">
+                <div className="p-3 sm:p-4 space-y-3 max-h-72 overflow-y-auto">
                     {events.length === 0 ? (
-                        <p className="text-center text-sm text-stone-400 dark:text-stone-500 py-4">
-                            이 날짜에 해당하는 일정이 없습니다
-                        </p>
+                        <p className="text-center text-sm text-stone-400 py-4">이 날짜에 해당하는 일정이 없습니다</p>
                     ) : (
                         Object.entries(eventsByBrand).map(([brandName, brandEvents]) => (
                             <div key={brandName} className="space-y-2">
                                 <div className="flex items-center gap-2">
-                                    <div
-                                        className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full shrink-0"
-                                        style={{ backgroundColor: brandEvents[0].color }}
-                                    />
-                                    <span className="font-bold text-sm text-text-main-light dark:text-text-main-dark">
-                                        {brandName}
-                                    </span>
+                                    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: brandEvents[0].color }} />
+                                    <span className="font-bold text-sm text-text-main-light dark:text-text-main-dark">{brandName}</span>
                                 </div>
-                                {brandEvents.map((ev) => {
-                                    const previewText = ev.items.length > 0
-                                        ? stripForPreview(ev.items[0])
-                                        : "";
-
+                                {brandEvents.map(ev => {
+                                    const preview = ev.items.length > 0 ? stripForPreview(ev.items[0]) : "";
                                     return (
-                                        <div
-                                            key={ev.id}
-                                            className="ml-4 sm:ml-5 p-2.5 sm:p-3 rounded-lg border border-stone-100 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/30"
-                                        >
-                                            <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
-                                                <span className="material-symbols-outlined text-xs sm:text-sm text-stone-500">
-                                                    {getEventTypeIcon(ev.type)}
-                                                </span>
-                                                <span className="text-[10px] sm:text-xs font-bold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: ev.color + "20", color: ev.color }}>
-                                                    {getEventTypeLabel(ev.type)}
-                                                </span>
-                                                <span className="text-xs sm:text-sm font-bold text-text-main-light dark:text-text-main-dark truncate">
-                                                    {ev.title}
-                                                </span>
+                                        <div key={ev.id} className="ml-4 p-2.5 rounded-lg border border-stone-100 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/30">
+                                            <div className="flex items-center gap-1.5 mb-1">
+                                                <span className="material-symbols-outlined text-xs text-stone-500">{getEventTypeIcon(ev.type)}</span>
+                                                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: ev.color + "20", color: ev.color }}>{getEventTypeLabel(ev.type)}</span>
+                                                <span className="text-xs font-bold text-text-main-light dark:text-text-main-dark truncate">{ev.title}</span>
                                             </div>
-
                                             {/* 모바일: 한 줄 요약 + 더 보기 */}
                                             <div className="sm:hidden">
-                                                {previewText && (
-                                                    <p className="text-xs text-stone-600 dark:text-stone-400 line-clamp-1 leading-relaxed mb-1.5">
-                                                        {previewText}
-                                                    </p>
-                                                )}
+                                                {preview && <p className="text-xs text-stone-600 dark:text-stone-400 line-clamp-1 mb-1">{preview}</p>}
                                                 {ev.items.length > 0 && (
-                                                    <button
-                                                        onClick={() => setDetailEvent(ev)}
-                                                        className="text-[11px] font-bold text-primary dark:text-amber-500 flex items-center gap-0.5 hover:underline"
-                                                    >
-                                                        더 보기
-                                                        <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+                                                    <button onClick={() => setDetailEvent(ev)} className="text-[11px] font-bold text-primary dark:text-amber-500 flex items-center gap-0.5">
+                                                        더 보기 <span className="material-symbols-outlined text-[14px]">chevron_right</span>
                                                     </button>
                                                 )}
                                             </div>
-
-                                            {/* 데스크톱: 전체 items 표시 */}
+                                            {/* 데스크톱: 전체 표시 */}
                                             {ev.items.length > 0 && (
                                                 <ul className="hidden sm:block space-y-1 mt-1.5">
                                                     {ev.items.map((item, i) => (
@@ -318,11 +227,7 @@ function DayDetailPanel({
                     )}
                 </div>
             </div>
-
-            {/* 더 보기 상세 모달 */}
-            {detailEvent && (
-                <EventDetailModal event={detailEvent} onClose={() => setDetailEvent(null)} />
-            )}
+            {detailEvent && <EventDetailModal event={detailEvent} onClose={() => setDetailEvent(null)} />}
         </>
     );
 }
@@ -331,108 +236,101 @@ function DayDetailPanel({
 // ============================================
 // Main Calendar Component
 // ============================================
-
 export function Calendar({ events }: CalendarProps) {
     const now = new Date();
     const [currentYear, setCurrentYear] = useState(now.getFullYear());
     const [currentMonth, setCurrentMonth] = useState(now.getMonth());
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+    const monthScrollRef = useRef<HTMLDivElement>(null);
 
-    const weeks = useMemo(
-        () => getCalendarDays(currentYear, currentMonth),
-        [currentYear, currentMonth]
-    );
-
+    const weeks = useMemo(() => getCalendarDays(currentYear, currentMonth), [currentYear, currentMonth]);
     const selectedDateEvents = useMemo(() => {
         if (!selectedDate) return [];
         return getEventsForDate(events, selectedDate);
     }, [selectedDate, events]);
 
-    const handleMonthChange = (month: number) => {
+    // 월 탭 스크롤 시 연도 전환
+    const allMonths = useMemo(() => {
+        const result = [];
+        for (let y = currentYear - 1; y <= currentYear + 1; y++) {
+            for (let m = 0; m < 12; m++) {
+                result.push({ year: y, month: m, label: `${m + 1}월` });
+            }
+        }
+        return result;
+    }, [currentYear]);
+
+    // 초기 스크롤 위치 설정 (현재 월이 보이도록)
+    useEffect(() => {
+        if (monthScrollRef.current) {
+            const activeBtn = monthScrollRef.current.querySelector('[data-active="true"]') as HTMLElement;
+            if (activeBtn) {
+                activeBtn.scrollIntoView({ inline: "center", block: "nearest" });
+            }
+        }
+    }, [currentYear]);
+
+    const handleMonthSelect = (year: number, month: number) => {
+        setCurrentYear(year);
         setCurrentMonth(month);
         setSelectedDate(null);
     };
 
-    const handleYearNav = (delta: number) => {
-        setCurrentYear((y) => y + delta);
-        setSelectedDate(null);
-    };
-
     return (
-        <div className="bg-surface-light dark:bg-surface-dark rounded-2xl shadow-sm border border-stone-200 dark:border-stone-700 overflow-hidden w-full max-w-full">
-            {/* Year navigation */}
-            <div className="flex items-center justify-center gap-3 pt-3 sm:pt-4 pb-1.5 sm:pb-2 px-3 sm:px-4">
-                <button
-                    onClick={() => handleYearNav(-1)}
-                    className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
-                >
-                    <span className="material-symbols-outlined text-stone-500 text-base sm:text-lg">chevron_left</span>
-                </button>
-                <h2 className="font-display text-base sm:text-lg font-bold text-text-main-light dark:text-text-main-dark tracking-tight">
-                    {currentYear}년
-                </h2>
-                <button
-                    onClick={() => handleYearNav(1)}
-                    className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
-                >
-                    <span className="material-symbols-outlined text-stone-500 text-base sm:text-lg">chevron_right</span>
-                </button>
+        <div className="bg-surface-light dark:bg-surface-dark rounded-2xl shadow-sm border border-stone-200 dark:border-stone-700 overflow-hidden w-full">
+
+            {/* ====== 월 선택 탭 (한 줄 가로 스크롤) ====== */}
+            <div
+                ref={monthScrollRef}
+                className="flex overflow-x-auto scrollbar-hide border-b border-stone-200 dark:border-stone-700 [-webkit-overflow-scrolling:touch]"
+            >
+                {allMonths.map(({ year, month, label }) => {
+                    const isActive = year === currentYear && month === currentMonth;
+                    const isJan = month === 0;
+                    return (
+                        <button
+                            key={`${year}-${month}`}
+                            data-active={isActive ? "true" : "false"}
+                            onClick={() => handleMonthSelect(year, month)}
+                            className={`flex-shrink-0 px-4 py-2.5 text-sm font-bold transition-all relative whitespace-nowrap
+                                ${isJan ? "border-l border-stone-200 dark:border-stone-700" : ""}
+                                ${isActive
+                                    ? "text-primary dark:text-amber-500"
+                                    : "text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300"
+                                }`}
+                        >
+                            {isJan && <span className="text-[10px] text-stone-400 dark:text-stone-500 block leading-none mb-0.5">{year}</span>}
+                            {label}
+                            {isActive && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-[3px] bg-primary dark:bg-amber-500 rounded-full" />}
+                        </button>
+                    );
+                })}
             </div>
 
-            {/* Month tabs */}
-            <div className="px-2 sm:px-3 pb-2 sm:pb-3">
-                <div className="grid grid-cols-6 sm:flex sm:flex-nowrap gap-1 sm:gap-1.5 sm:overflow-x-auto sm:scrollbar-hide sm:min-w-max px-1">
-                    {MONTH_NAMES.map((name, i) => {
-                        const isActive = i === currentMonth;
-                        return (
-                            <button
-                                key={i}
-                                onClick={() => handleMonthChange(i)}
-                                className={`px-1 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all whitespace-nowrap ${isActive
-                                    ? "bg-primary text-white shadow-sm"
-                                    : "text-stone-500 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800"
-                                    }`}
-                            >
-                                {name}
-                            </button>
-                        );
-                    })}
-                </div>
-            </div>
-
-            {/* Day header */}
-            <div className="grid grid-cols-7 border-t border-stone-200 dark:border-stone-700">
+            {/* ====== 요일 헤더 ====== */}
+            <div className="grid grid-cols-7">
                 {DAY_NAMES.map((day, i) => (
-                    <div
-                        key={day}
-                        className={`text-center text-[10px] sm:text-xs font-bold py-1.5 sm:py-2 ${i === 0
-                            ? "text-red-400"
-                            : i === 6
-                                ? "text-blue-400"
-                                : "text-stone-400 dark:text-stone-500"
-                            }`}
-                    >
+                    <div key={day} className={`text-center text-xs font-bold py-2
+                        ${i === 0 ? "text-red-400" : i === 6 ? "text-blue-400" : "text-stone-400 dark:text-stone-500"}`}>
                         {day}
                     </div>
                 ))}
             </div>
 
-            {/* Calendar grid */}
+            {/* ====== 달력 그리드 ====== */}
             <div className="border-t border-stone-200 dark:border-stone-700">
                 {weeks.map((week, weekIdx) => {
-                    const eventBars = getEventBarsForWeek(week, events, currentMonth);
-                    const maxRow = eventBars.length > 0 ? Math.max(...eventBars.map(b => b.row)) + 1 : 0;
+                    const eventBars = getEventBarsForWeek(week, events);
 
                     return (
                         <div key={weekIdx} className="relative">
-                            {/* Date numbers row */}
+                            {/* 날짜 번호 + 이벤트 도트 */}
                             <div className="grid grid-cols-7 border-b border-stone-100 dark:border-stone-800">
                                 {week.map((date, dayIdx) => {
                                     const isThisMonth = date.getMonth() === currentMonth;
                                     const isTodayDate = isToday(date);
                                     const dayEvents = getEventsForDate(events, date);
-                                    const isSelected =
-                                        selectedDate &&
+                                    const isSelected = selectedDate &&
                                         date.getDate() === selectedDate.getDate() &&
                                         date.getMonth() === selectedDate.getMonth() &&
                                         date.getFullYear() === selectedDate.getFullYear();
@@ -440,49 +338,32 @@ export function Calendar({ events }: CalendarProps) {
                                     return (
                                         <button
                                             key={dayIdx}
-                                            onClick={() => {
-                                                if (isSelected) {
-                                                    setSelectedDate(null);
-                                                } else {
-                                                    setSelectedDate(date);
-                                                }
-                                            }}
-                                            className={`relative text-left p-0.5 sm:p-1.5 transition-colors min-h-[44px] sm:min-h-[80px] ${dayIdx < 6 ? "border-r border-stone-100 dark:border-stone-800" : ""
-                                                } ${isSelected
-                                                    ? "bg-primary/5 dark:bg-primary/10"
-                                                    : "hover:bg-stone-50 dark:hover:bg-stone-800/50"
-                                                }`}
+                                            onClick={() => setSelectedDate(isSelected ? null : date)}
+                                            className={`relative p-1 transition-colors
+                                                min-h-[52px] sm:min-h-[100px]
+                                                ${dayIdx < 6 ? "border-r border-stone-100 dark:border-stone-800" : ""}
+                                                ${isSelected ? "bg-primary/5 dark:bg-primary/10" : "hover:bg-stone-50 dark:hover:bg-stone-800/50"}`}
                                         >
+                                            {/* 날짜 숫자 — 상단에 고정 */}
                                             <div className="flex items-center justify-center">
-                                                <span
-                                                    className={`text-[11px] sm:text-sm font-medium w-5 h-5 sm:w-7 sm:h-7 flex items-center justify-center rounded-full ${isTodayDate
+                                                <span className={`text-sm sm:text-sm font-medium w-7 h-7 flex items-center justify-center rounded-full
+                                                    ${isTodayDate
                                                         ? "bg-primary text-white font-bold"
                                                         : isThisMonth
-                                                            ? dayIdx === 0
-                                                                ? "text-red-400"
-                                                                : dayIdx === 6
-                                                                    ? "text-blue-400"
-                                                                    : "text-text-main-light dark:text-text-main-dark"
+                                                            ? dayIdx === 0 ? "text-red-400" : dayIdx === 6 ? "text-blue-400" : "text-text-main-light dark:text-text-main-dark"
                                                             : "text-stone-300 dark:text-stone-600"
-                                                        }`}
-                                                >
+                                                    }`}>
                                                     {date.getDate()}
                                                 </span>
                                             </div>
 
-                                            {/* Event dots for mobile */}
+                                            {/* 모바일: 이벤트 도트 */}
                                             {dayEvents.length > 0 && (
-                                                <div className="flex gap-[2px] justify-center sm:hidden mt-0.5">
+                                                <div className="flex gap-[3px] justify-center sm:hidden mt-1">
                                                     {dayEvents.slice(0, 3).map((ev, i) => (
-                                                        <div
-                                                            key={i}
-                                                            className="w-[5px] h-[5px] rounded-full"
-                                                            style={{ backgroundColor: ev.color }}
-                                                        />
+                                                        <div key={i} className="w-[6px] h-[6px] rounded-full" style={{ backgroundColor: ev.color }} />
                                                     ))}
-                                                    {dayEvents.length > 3 && (
-                                                        <span className="text-[8px] text-stone-400 leading-none">+</span>
-                                                    )}
+                                                    {dayEvents.length > 3 && <span className="text-[8px] text-stone-400 leading-none">+</span>}
                                                 </div>
                                             )}
                                         </button>
@@ -490,17 +371,12 @@ export function Calendar({ events }: CalendarProps) {
                                 })}
                             </div>
 
-                            {/* Event bars overlay (desktop only) */}
+                            {/* 데스크톱: 이벤트 바 (날짜 아래에 배치) */}
                             {eventBars.length > 0 && (
-                                <div
-                                    className="hidden sm:block absolute left-0 right-0 pointer-events-none"
-                                    style={{ top: "32px" }}
-                                >
+                                <div className="hidden sm:block absolute left-0 right-0 pointer-events-none" style={{ top: "32px" }}>
                                     {eventBars.map((bar, idx) => {
                                         const leftPercent = (bar.startCol / 7) * 100;
                                         const widthPercent = (bar.spanCols / 7) * 100;
-                                        const topOffset = bar.row * 20;
-
                                         return (
                                             <div
                                                 key={idx}
@@ -508,7 +384,7 @@ export function Calendar({ events }: CalendarProps) {
                                                 style={{
                                                     left: `calc(${leftPercent}% + 2px)`,
                                                     width: `calc(${widthPercent}% - 4px)`,
-                                                    top: `${topOffset}px`,
+                                                    top: `${bar.row * 20}px`,
                                                     backgroundColor: bar.event.color,
                                                 }}
                                                 title={`${bar.event.brandName}: ${bar.event.title}`}
@@ -524,16 +400,16 @@ export function Calendar({ events }: CalendarProps) {
                 })}
             </div>
 
-            {/* Brand legend */}
+            {/* ====== 브랜드 범례 ====== */}
             {events.length > 0 && (
-                <div className="px-3 sm:px-4 py-2 sm:py-3 border-t border-stone-100 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/30">
-                    <div className="flex flex-wrap gap-2 sm:gap-3">
-                        {Array.from(new Set(events.map((e) => e.brandName))).map((brand) => {
-                            const color = events.find((e) => e.brandName === brand)?.color || "#888";
+                <div className="px-3 py-2.5 border-t border-stone-100 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/30 overflow-x-auto scrollbar-hide">
+                    <div className="flex gap-3 min-w-max">
+                        {Array.from(new Set(events.map(e => e.brandName))).map(brand => {
+                            const color = events.find(e => e.brandName === brand)?.color || "#888";
                             return (
-                                <div key={brand} className="flex items-center gap-1">
-                                    <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full" style={{ backgroundColor: color }} />
-                                    <span className="text-[10px] sm:text-xs font-medium text-stone-600 dark:text-stone-400">{brand}</span>
+                                <div key={brand} className="flex items-center gap-1.5 flex-shrink-0">
+                                    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
+                                    <span className="text-xs font-medium text-stone-600 dark:text-stone-400 whitespace-nowrap">{brand}</span>
                                 </div>
                             );
                         })}
@@ -541,14 +417,10 @@ export function Calendar({ events }: CalendarProps) {
                 </div>
             )}
 
-            {/* Selected date detail */}
+            {/* ====== 선택 날짜 상세 ====== */}
             {selectedDate && (
                 <div className="p-3 sm:p-4 border-t border-stone-200 dark:border-stone-700">
-                    <DayDetailPanel
-                        date={selectedDate}
-                        events={selectedDateEvents}
-                        onClose={() => setSelectedDate(null)}
-                    />
+                    <DayDetailPanel date={selectedDate} events={selectedDateEvents} onClose={() => setSelectedDate(null)} />
                 </div>
             )}
         </div>
