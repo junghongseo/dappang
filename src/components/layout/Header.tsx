@@ -160,7 +160,7 @@ export function Header() {
                         className="p-2 rounded-full hover:bg-red-50 text-text-sub-light hover:text-red-600 transition-colors"
                         onClick={async () => {
                             await fetch('/api/auth/logout', { method: 'POST' });
-                            router.push('/login');
+                            router.push('/');
                             router.refresh();
                         }}
                         aria-label="로그아웃"

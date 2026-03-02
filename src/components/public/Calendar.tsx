@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { createPortal } from "react-dom";
 import {
     CalendarEvent,
     getCalendarDays,
@@ -27,9 +28,9 @@ interface CalendarProps {
 
 interface EventBarSegment {
     event: CalendarEvent;
-    startCol: number; // 0-6 within the week
-    spanCols: number; // how many cols this segment covers
-    row: number; // vertical slot within the cell
+    startCol: number;
+    spanCols: number;
+    row: number;
 }
 
 function getEventBarsForWeek(
@@ -38,9 +39,7 @@ function getEventBarsForWeek(
     currentMonth: number,
 ): EventBarSegment[] {
     const bars: EventBarSegment[] = [];
-    const slotTracker: Map<string, number>[] = weekDates.map(() => new Map());
 
-    // Find events that overlap this week
     const weekStart = new Date(weekDates[0].getFullYear(), weekDates[0].getMonth(), weekDates[0].getDate()).getTime();
     const weekEnd = new Date(weekDates[6].getFullYear(), weekDates[6].getMonth(), weekDates[6].getDate()).getTime();
 
@@ -50,7 +49,6 @@ function getEventBarsForWeek(
         return evEnd >= weekStart && evStart <= weekEnd;
     });
 
-    // Sort events: longer events first, then by start date
     relevantEvents.sort((a, b) => {
         const aDuration = a.endDate.getTime() - a.startDate.getTime();
         const bDuration = b.endDate.getTime() - b.startDate.getTime();
@@ -58,7 +56,6 @@ function getEventBarsForWeek(
         return a.startDate.getTime() - b.startDate.getTime();
     });
 
-    // Assign slots
     const usedSlots: boolean[][] = weekDates.map(() => []);
 
     for (const event of relevantEvents) {
@@ -83,7 +80,6 @@ function getEventBarsForWeek(
 
         if (startCol > endCol) continue;
 
-        // Find first available slot for all columns
         let slot = 0;
         while (true) {
             let available = true;
@@ -95,12 +91,11 @@ function getEventBarsForWeek(
             }
             if (available) break;
             slot++;
-            if (slot > 3) break; // max 4 events per cell visually
+            if (slot > 3) break;
         }
 
         if (slot > 3) continue;
 
-        // Mark slot as used
         for (let col = startCol; col <= endCol; col++) {
             while (usedSlots[col].length <= slot) usedSlots[col].push(false);
             usedSlots[col][slot] = true;
@@ -117,6 +112,92 @@ function getEventBarsForWeek(
     return bars;
 }
 
+// ============================================
+// Helper: strip HTML + URLs for clean preview
+// ============================================
+function stripForPreview(text: string): string {
+    return text
+        .replace(/<[^>]*>/g, "")
+        .replace(/\[?https?:\/\/[^\s<\]\)]+\]?/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+// ============================================
+// Event Detail Modal (shared between mobile calendar & brand cards)
+// ============================================
+function EventDetailModal({
+    event, onClose
+}: {
+    event: CalendarEvent; onClose: () => void;
+}) {
+    const typeIcons: Record<string, { bg: string; text: string; icon: string }> = {
+        news: { bg: "bg-orange-50 dark:bg-orange-900/15", text: "text-orange-800 dark:text-orange-300", icon: "restaurant_menu" },
+        event: { bg: "bg-purple-50 dark:bg-purple-900/15", text: "text-purple-800 dark:text-purple-300", icon: "event" },
+        sale: { bg: "bg-green-50 dark:bg-green-900/15", text: "text-green-800 dark:text-green-300", icon: "local_offer" },
+        holiday: { bg: "bg-red-50 dark:bg-red-900/15", text: "text-red-800 dark:text-red-300", icon: "schedule" },
+        info: { bg: "bg-blue-50 dark:bg-blue-900/15", text: "text-blue-800 dark:text-blue-300", icon: "info" },
+    };
+    const style = typeIcons[event.type] || typeIcons.info;
+
+    function formatLinksToIcons(text: string) {
+        if (!text) return "";
+        const regex = /<a\s+(?:[^>]*?\s+)?href=(['"])(.*?)\1[^>]*>.*?<\/a>|\[?(https?:\/\/[^\s<\]\)]+)\]?/gi;
+        return text.replace(regex, (match, quote, aHref, rawUrl) => {
+            const url = aHref || rawUrl;
+            if (!url) return match;
+            const cleanUrl = url.replace(/^[\[\(]/, '').replace(/[\]\)]$/, '');
+            return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-300 transition-colors mx-1 align-middle bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 rounded px-1.5 py-0.5 border border-stone-200 dark:border-stone-700" title="해당 링크 열기" onclick="event.stopPropagation()">
+                <span class="material-symbols-outlined text-[14px]">link</span>
+                <span class="text-[11px] font-bold ml-0.5">링크</span>
+            </a>`;
+        });
+    }
+
+    return createPortal(
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose}>
+            <div
+                className="w-full max-w-md bg-surface-light dark:bg-surface-dark rounded-2xl shadow-2xl border border-stone-200 dark:border-stone-700 overflow-hidden flex flex-col animate-in zoom-in-95 duration-200"
+                onClick={(e) => e.stopPropagation()}
+            >
+                <div className={`p-4 border-b border-stone-100 dark:border-stone-800 flex justify-between items-center ${style.bg}`}>
+                    <div className="flex items-center gap-3">
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center bg-white/50 dark:bg-black/10`}>
+                            <span className={`material-symbols-outlined text-2xl ${style.text}`}>{style.icon}</span>
+                        </div>
+                        <div>
+                            <p className="text-sm text-stone-500 dark:text-stone-400 font-medium tracking-tight mb-0.5">{event.brandName}</p>
+                            <h3 className={`font-bold text-xl leading-tight ${style.text}`}>{event.title}</h3>
+                        </div>
+                    </div>
+                    <button
+                        onClick={onClose}
+                        className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-stone-500 dark:text-stone-400"
+                    >
+                        <span className="material-symbols-outlined text-xl">close</span>
+                    </button>
+                </div>
+
+                <div className="p-6 overflow-y-auto max-h-[60vh]">
+                    {event.items && event.items.length > 0 ? (
+                        <ul className="space-y-4 text-base leading-relaxed text-stone-700 dark:text-stone-300">
+                            {event.items.map((item, i) => (
+                                <li key={i} className="flex items-start gap-2.5">
+                                    <span className="text-stone-400 dark:text-stone-500 mt-1 flex-shrink-0">•</span>
+                                    <span dangerouslySetInnerHTML={{ __html: formatLinksToIcons(item) }} />
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p className="text-stone-500 text-sm">상세 정보가 없습니다.</p>
+                    )}
+                </div>
+            </div>
+        </div>,
+        document.body
+    );
+}
+
 
 // ============================================
 // Day Detail Panel (shown when clicking a date)
@@ -131,6 +212,7 @@ function DayDetailPanel({
     events: CalendarEvent[];
     onClose: () => void;
 }) {
+    const [detailEvent, setDetailEvent] = useState<CalendarEvent | null>(null);
     const dateStr = `${date.getMonth() + 1}월 ${date.getDate()}일 (${DAY_NAMES[date.getDay()]})`;
 
     // Group events by brand
@@ -141,74 +223,107 @@ function DayDetailPanel({
     }, {});
 
     return (
-        <div className="bg-surface-light dark:bg-surface-dark rounded-2xl shadow-lg border border-stone-200 dark:border-stone-700 overflow-hidden animate-in slide-in-from-top-2 duration-200">
-            <div className="flex items-center justify-between p-4 border-b border-stone-100 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/50">
-                <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-primary dark:text-amber-500">
-                        calendar_today
-                    </span>
-                    <h3 className="font-bold text-lg text-text-main-light dark:text-text-main-dark">
-                        {dateStr}
-                    </h3>
+        <>
+            <div className="bg-surface-light dark:bg-surface-dark rounded-2xl shadow-lg border border-stone-200 dark:border-stone-700 overflow-hidden animate-in slide-in-from-top-2 duration-200">
+                <div className="flex items-center justify-between p-3 sm:p-4 border-b border-stone-100 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/50">
+                    <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-primary dark:text-amber-500 text-lg sm:text-xl">
+                            calendar_today
+                        </span>
+                        <h3 className="font-bold text-base sm:text-lg text-text-main-light dark:text-text-main-dark">
+                            {dateStr}
+                        </h3>
+                    </div>
+                    <button
+                        onClick={onClose}
+                        className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors"
+                    >
+                        <span className="material-symbols-outlined text-base sm:text-lg text-stone-500">close</span>
+                    </button>
                 </div>
-                <button
-                    onClick={onClose}
-                    className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors"
-                >
-                    <span className="material-symbols-outlined text-lg text-stone-500">close</span>
-                </button>
+
+                <div className="p-3 sm:p-4 space-y-3 sm:space-y-4 max-h-72 overflow-y-auto">
+                    {events.length === 0 ? (
+                        <p className="text-center text-sm text-stone-400 dark:text-stone-500 py-4">
+                            이 날짜에 해당하는 일정이 없습니다
+                        </p>
+                    ) : (
+                        Object.entries(eventsByBrand).map(([brandName, brandEvents]) => (
+                            <div key={brandName} className="space-y-2">
+                                <div className="flex items-center gap-2">
+                                    <div
+                                        className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full shrink-0"
+                                        style={{ backgroundColor: brandEvents[0].color }}
+                                    />
+                                    <span className="font-bold text-sm text-text-main-light dark:text-text-main-dark">
+                                        {brandName}
+                                    </span>
+                                </div>
+                                {brandEvents.map((ev) => {
+                                    const previewText = ev.items.length > 0
+                                        ? stripForPreview(ev.items[0])
+                                        : "";
+
+                                    return (
+                                        <div
+                                            key={ev.id}
+                                            className="ml-4 sm:ml-5 p-2.5 sm:p-3 rounded-lg border border-stone-100 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/30"
+                                        >
+                                            <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
+                                                <span className="material-symbols-outlined text-xs sm:text-sm text-stone-500">
+                                                    {getEventTypeIcon(ev.type)}
+                                                </span>
+                                                <span className="text-[10px] sm:text-xs font-bold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: ev.color + "20", color: ev.color }}>
+                                                    {getEventTypeLabel(ev.type)}
+                                                </span>
+                                                <span className="text-xs sm:text-sm font-bold text-text-main-light dark:text-text-main-dark truncate">
+                                                    {ev.title}
+                                                </span>
+                                            </div>
+
+                                            {/* 모바일: 한 줄 요약 + 더 보기 */}
+                                            <div className="sm:hidden">
+                                                {previewText && (
+                                                    <p className="text-xs text-stone-600 dark:text-stone-400 line-clamp-1 leading-relaxed mb-1.5">
+                                                        {previewText}
+                                                    </p>
+                                                )}
+                                                {ev.items.length > 0 && (
+                                                    <button
+                                                        onClick={() => setDetailEvent(ev)}
+                                                        className="text-[11px] font-bold text-primary dark:text-amber-500 flex items-center gap-0.5 hover:underline"
+                                                    >
+                                                        더 보기
+                                                        <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+                                                    </button>
+                                                )}
+                                            </div>
+
+                                            {/* 데스크톱: 전체 items 표시 */}
+                                            {ev.items.length > 0 && (
+                                                <ul className="hidden sm:block space-y-1 mt-1.5">
+                                                    {ev.items.map((item, i) => (
+                                                        <li key={i} className="text-xs text-stone-600 dark:text-stone-400 flex items-start gap-1.5 leading-relaxed">
+                                                            <span className="text-stone-400 mt-0.5">•</span>
+                                                            <span>{stripForPreview(item)}</span>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        ))
+                    )}
+                </div>
             </div>
 
-            <div className="p-4 space-y-4 max-h-72 overflow-y-auto">
-                {events.length === 0 ? (
-                    <p className="text-center text-sm text-stone-400 dark:text-stone-500 py-4">
-                        이 날짜에 해당하는 일정이 없습니다
-                    </p>
-                ) : (
-                    Object.entries(eventsByBrand).map(([brandName, brandEvents]) => (
-                        <div key={brandName} className="space-y-2">
-                            <div className="flex items-center gap-2">
-                                <div
-                                    className="w-3 h-3 rounded-full shrink-0"
-                                    style={{ backgroundColor: brandEvents[0].color }}
-                                />
-                                <span className="font-bold text-sm text-text-main-light dark:text-text-main-dark">
-                                    {brandName}
-                                </span>
-                            </div>
-                            {brandEvents.map((ev) => (
-                                <div
-                                    key={ev.id}
-                                    className="ml-5 p-3 rounded-lg border border-stone-100 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/30"
-                                >
-                                    <div className="flex items-center gap-2 mb-1.5">
-                                        <span className="material-symbols-outlined text-sm text-stone-500">
-                                            {getEventTypeIcon(ev.type)}
-                                        </span>
-                                        <span className="text-xs font-bold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: ev.color + "20", color: ev.color }}>
-                                            {getEventTypeLabel(ev.type)}
-                                        </span>
-                                        <span className="text-sm font-bold text-text-main-light dark:text-text-main-dark">
-                                            {ev.title}
-                                        </span>
-                                    </div>
-                                    {ev.items.length > 0 && (
-                                        <ul className="space-y-1">
-                                            {ev.items.map((item, i) => (
-                                                <li key={i} className="text-xs text-stone-600 dark:text-stone-400 flex items-start gap-1.5 leading-relaxed">
-                                                    <span className="text-stone-400 mt-0.5">•</span>
-                                                    <span>{item.replace(/<[^>]*>/g, "").replace(/\[?https?:\/\/[^\s<\]\)]+\]?/g, "").trim()}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    ))
-                )}
-            </div>
-        </div>
+            {/* 더 보기 상세 모달 */}
+            {detailEvent && (
+                <EventDetailModal event={detailEvent} onClose={() => setDetailEvent(null)} />
+            )}
+        </>
     );
 }
 
@@ -246,36 +361,36 @@ export function Calendar({ events }: CalendarProps) {
     return (
         <div className="bg-surface-light dark:bg-surface-dark rounded-2xl shadow-sm border border-stone-200 dark:border-stone-700 overflow-hidden">
             {/* Year navigation */}
-            <div className="flex items-center justify-center gap-4 pt-4 pb-2 px-4">
+            <div className="flex items-center justify-center gap-4 pt-3 sm:pt-4 pb-1.5 sm:pb-2 px-4">
                 <button
                     onClick={() => handleYearNav(-1)}
-                    className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+                    className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
                 >
-                    <span className="material-symbols-outlined text-stone-500 text-lg">chevron_left</span>
+                    <span className="material-symbols-outlined text-stone-500 text-base sm:text-lg">chevron_left</span>
                 </button>
-                <h2 className="font-display text-lg font-bold text-text-main-light dark:text-text-main-dark tracking-tight">
+                <h2 className="font-display text-base sm:text-lg font-bold text-text-main-light dark:text-text-main-dark tracking-tight">
                     {currentYear}년
                 </h2>
                 <button
                     onClick={() => handleYearNav(1)}
-                    className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+                    className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
                 >
-                    <span className="material-symbols-outlined text-stone-500 text-lg">chevron_right</span>
+                    <span className="material-symbols-outlined text-stone-500 text-base sm:text-lg">chevron_right</span>
                 </button>
             </div>
 
             {/* Month tabs */}
-            <div className="px-3 pb-3 overflow-x-auto scrollbar-hide">
-                <div className="flex gap-1.5 min-w-max px-1">
+            <div className="px-2 sm:px-3 pb-2 sm:pb-3 overflow-x-auto scrollbar-hide">
+                <div className="flex gap-1 sm:gap-1.5 min-w-max px-1">
                     {MONTH_NAMES.map((name, i) => {
                         const isActive = i === currentMonth;
                         return (
                             <button
                                 key={i}
                                 onClick={() => handleMonthChange(i)}
-                                className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${isActive
-                                        ? "bg-primary text-white shadow-sm"
-                                        : "text-stone-500 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800"
+                                className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all whitespace-nowrap ${isActive
+                                    ? "bg-primary text-white shadow-sm"
+                                    : "text-stone-500 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800"
                                     }`}
                             >
                                 {name}
@@ -290,11 +405,11 @@ export function Calendar({ events }: CalendarProps) {
                 {DAY_NAMES.map((day, i) => (
                     <div
                         key={day}
-                        className={`text-center text-xs font-bold py-2 ${i === 0
-                                ? "text-red-400"
-                                : i === 6
-                                    ? "text-blue-400"
-                                    : "text-stone-400 dark:text-stone-500"
+                        className={`text-center text-[10px] sm:text-xs font-bold py-1.5 sm:py-2 ${i === 0
+                            ? "text-red-400"
+                            : i === 6
+                                ? "text-blue-400"
+                                : "text-stone-400 dark:text-stone-500"
                             }`}
                     >
                         {day}
@@ -306,7 +421,6 @@ export function Calendar({ events }: CalendarProps) {
             <div className="border-t border-stone-200 dark:border-stone-700">
                 {weeks.map((week, weekIdx) => {
                     const eventBars = getEventBarsForWeek(week, events, currentMonth);
-                    // Calculate needed rows for event bars
                     const maxRow = eventBars.length > 0 ? Math.max(...eventBars.map(b => b.row)) + 1 : 0;
 
                     return (
@@ -333,23 +447,23 @@ export function Calendar({ events }: CalendarProps) {
                                                     setSelectedDate(date);
                                                 }
                                             }}
-                                            className={`relative text-left p-1 sm:p-1.5 transition-colors min-h-[68px] sm:min-h-[80px] ${dayIdx < 6 ? "border-r border-stone-100 dark:border-stone-800" : ""
+                                            className={`relative text-left p-0.5 sm:p-1.5 transition-colors min-h-[44px] sm:min-h-[80px] ${dayIdx < 6 ? "border-r border-stone-100 dark:border-stone-800" : ""
                                                 } ${isSelected
                                                     ? "bg-primary/5 dark:bg-primary/10"
                                                     : "hover:bg-stone-50 dark:hover:bg-stone-800/50"
                                                 }`}
                                         >
-                                            <div className="flex items-center justify-center mb-0.5">
+                                            <div className="flex items-center justify-center">
                                                 <span
-                                                    className={`text-xs sm:text-sm font-medium w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded-full ${isTodayDate
-                                                            ? "bg-primary text-white font-bold"
-                                                            : isThisMonth
-                                                                ? dayIdx === 0
-                                                                    ? "text-red-400"
-                                                                    : dayIdx === 6
-                                                                        ? "text-blue-400"
-                                                                        : "text-text-main-light dark:text-text-main-dark"
-                                                                : "text-stone-300 dark:text-stone-600"
+                                                    className={`text-[11px] sm:text-sm font-medium w-5 h-5 sm:w-7 sm:h-7 flex items-center justify-center rounded-full ${isTodayDate
+                                                        ? "bg-primary text-white font-bold"
+                                                        : isThisMonth
+                                                            ? dayIdx === 0
+                                                                ? "text-red-400"
+                                                                : dayIdx === 6
+                                                                    ? "text-blue-400"
+                                                                    : "text-text-main-light dark:text-text-main-dark"
+                                                            : "text-stone-300 dark:text-stone-600"
                                                         }`}
                                                 >
                                                     {date.getDate()}
@@ -358,14 +472,17 @@ export function Calendar({ events }: CalendarProps) {
 
                                             {/* Event dots for mobile */}
                                             {dayEvents.length > 0 && (
-                                                <div className="flex gap-0.5 justify-center sm:hidden mt-0.5">
+                                                <div className="flex gap-[2px] justify-center sm:hidden mt-0.5">
                                                     {dayEvents.slice(0, 3).map((ev, i) => (
                                                         <div
                                                             key={i}
-                                                            className="w-1.5 h-1.5 rounded-full"
+                                                            className="w-[5px] h-[5px] rounded-full"
                                                             style={{ backgroundColor: ev.color }}
                                                         />
                                                     ))}
+                                                    {dayEvents.length > 3 && (
+                                                        <span className="text-[8px] text-stone-400 leading-none">+</span>
+                                                    )}
                                                 </div>
                                             )}
                                         </button>
@@ -409,14 +526,14 @@ export function Calendar({ events }: CalendarProps) {
 
             {/* Brand legend */}
             {events.length > 0 && (
-                <div className="px-4 py-3 border-t border-stone-100 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/30">
-                    <div className="flex flex-wrap gap-3">
+                <div className="px-3 sm:px-4 py-2 sm:py-3 border-t border-stone-100 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/30">
+                    <div className="flex flex-wrap gap-2 sm:gap-3">
                         {Array.from(new Set(events.map((e) => e.brandName))).map((brand) => {
                             const color = events.find((e) => e.brandName === brand)?.color || "#888";
                             return (
-                                <div key={brand} className="flex items-center gap-1.5">
-                                    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
-                                    <span className="text-xs font-medium text-stone-600 dark:text-stone-400">{brand}</span>
+                                <div key={brand} className="flex items-center gap-1">
+                                    <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full" style={{ backgroundColor: color }} />
+                                    <span className="text-[10px] sm:text-xs font-medium text-stone-600 dark:text-stone-400">{brand}</span>
                                 </div>
                             );
                         })}
@@ -426,7 +543,7 @@ export function Calendar({ events }: CalendarProps) {
 
             {/* Selected date detail */}
             {selectedDate && (
-                <div className="p-4 border-t border-stone-200 dark:border-stone-700">
+                <div className="p-3 sm:p-4 border-t border-stone-200 dark:border-stone-700">
                     <DayDetailPanel
                         date={selectedDate}
                         events={selectedDateEvents}
