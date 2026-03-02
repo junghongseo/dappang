@@ -17,7 +17,20 @@ export function DayDetailPanel({ date, events, onClose }: DayDetailPanelProps) {
 
     const eventsByBrand = events.reduce<Record<string, CalendarEvent[]>>((acc, ev) => {
         if (!acc[ev.brandName]) acc[ev.brandName] = [];
-        acc[ev.brandName].push(ev);
+
+        // 동일한 블록에서 파생된 여러 날짜 범위(calendar_dates)가 
+        // 같은 날짜에 겹쳐서 표시될 경우 중복을 제거합니다.
+        const itemsStr = ev.items.join("");
+        const isDuplicate = acc[ev.brandName].some(existing =>
+            existing.title === ev.title &&
+            existing.type === ev.type &&
+            existing.items.join("") === itemsStr
+        );
+
+        if (!isDuplicate) {
+            acc[ev.brandName].push(ev);
+        }
+
         return acc;
     }, {});
 

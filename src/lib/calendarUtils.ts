@@ -122,6 +122,7 @@ interface BrandSummary {
 
 export function extractCalendarEvents(brands: BrandSummary[]): CalendarEvent[] {
     const events: CalendarEvent[] = [];
+    const eventSignatures = new Set<string>();
 
     for (const brand of brands) {
         const color = getBrandColor(brand.bakery_name);
@@ -148,8 +149,14 @@ export function extractCalendarEvents(brands: BrandSummary[]): CalendarEvent[] {
                     const durationDays = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
                     if (durationDays > 20) continue;
 
+                    // 서명(signature)을 통해 중복 항목 제거
+                    const itemsStr = blockItems.join("");
+                    const signature = `${brand.id}|${block.type}|${cleanTitle}|${itemsStr}|${startDate.getTime()}|${endDate.getTime()}`;
+                    if (eventSignatures.has(signature)) continue;
+                    eventSignatures.add(signature);
+
                     events.push({
-                        id: `${brand.id}-${block.type}-${dateEntry.start_date}`,
+                        id: `${brand.id}-${block.type}-${dateEntry.start_date}-${events.length}`,
                         brandName: brand.bakery_name,
                         brandId: brand.id,
                         title: cleanTitle,
