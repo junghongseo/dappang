@@ -85,7 +85,7 @@ export default async function PublicPage() {
   return (
     <>
       <PublicHeader lastUpdatedAt={lastUpdatedAt} />
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 overflow-x-hidden">
+      <main className="w-full min-w-0 max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 overflow-x-hidden">
         {/* 📅 캘린더 섹션 */}
         <section className="mb-8 sm:mb-10">
           <div className="mb-4 sm:mb-6">
