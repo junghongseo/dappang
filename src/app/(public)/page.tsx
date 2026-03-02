@@ -93,7 +93,7 @@ export default async function PublicPage() {
               📅 다빵 캘린더
             </h2>
             <p className="text-sm text-text-sub-light dark:text-text-sub-dark">
-              이벤트와 판매 일정을 한눈에 확인하세요
+              달력의 날짜를 선택해서 세부 이벤트를 확인하세요
             </p>
           </div>
           <CalendarSection events={calendarEvents} />

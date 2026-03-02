@@ -25,8 +25,23 @@ interface CalendarProps {
 // ============================================
 // Helper
 // ============================================
-function stripForPreview(text: string): string {
-    return text.replace(/<[^>]*>/g, "").replace(/\[?https?:\/\/[^\s<\]\)]+\]?/g, "").replace(/\s+/g, " ").trim();
+function stripHtml(text: string) {
+    if (!text) return "";
+    return text.replace(/<[^>]*>?/gm, '').replace(/\[?https?:\/\/[^\s<\]\)]+\]?/g, "").trim();
+}
+
+function formatLinksToIcons(text: string) {
+    if (!text) return "";
+    const regex = /<a\s+(?:[^>]*?\s+)?href=(['"])(.*?)\1[^>]*>.*?<\/a>|\[?(https?:\/\/[^\s<\]\)]+)\]?/gi;
+    return text.replace(regex, (match, quote, aHref, rawUrl) => {
+        const url = aHref || rawUrl;
+        if (!url) return match;
+        const cleanUrl = url.replace(/^[\[\(]/, '').replace(/[\]\)]$/, '');
+        return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-300 transition-colors mx-1 align-middle bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 rounded px-1.5 py-0.5 border border-stone-200 dark:border-stone-700" title="해당 링크 열기" onclick="event.stopPropagation()">
+            <span class="material-symbols-outlined text-[14px]">link</span>
+            <span class="text-[11px] font-bold ml-0.5">링크</span>
+        </a>`;
+    });
 }
 
 // ============================================
@@ -43,8 +58,8 @@ function EventDetailModal({ event, onClose }: { event: CalendarEvent; onClose: (
     const s = typeStyles[event.type] || typeStyles.info;
 
     return createPortal(
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm" onClick={onClose}>
-            <div className="w-full sm:max-w-md bg-surface-light dark:bg-surface-dark rounded-t-2xl sm:rounded-2xl shadow-2xl border border-stone-200 dark:border-stone-700 overflow-hidden max-h-[85vh] flex flex-col" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={onClose}>
+            <div className="w-full max-w-[340px] sm:max-w-md bg-surface-light dark:bg-surface-dark rounded-2xl shadow-2xl border border-stone-200 dark:border-stone-700 overflow-hidden max-h-[85vh] flex flex-col" onClick={e => e.stopPropagation()}>
                 <div className={`p-4 border-b border-stone-100 dark:border-stone-800 flex justify-between items-center ${s.bg}`}>
                     <div className="flex items-center gap-3 min-w-0">
                         <div className="w-10 h-10 rounded-full flex items-center justify-center bg-white/50 dark:bg-black/10 flex-shrink-0">
@@ -65,7 +80,9 @@ function EventDetailModal({ event, onClose }: { event: CalendarEvent; onClose: (
                             {event.items.map((item, i) => (
                                 <li key={i} className="flex items-start gap-2">
                                     <span className="text-stone-400 mt-0.5 flex-shrink-0">•</span>
-                                    <span>{stripForPreview(item)}</span>
+                                    <span
+                                        dangerouslySetInnerHTML={{ __html: formatLinksToIcons(item.replace(/<[^>]*>/g, "")) }}
+                                    />
                                 </li>
                             ))}
                         </ul>
@@ -115,7 +132,7 @@ function DayDetailPanel({ date, events, onClose }: { date: Date; events: Calenda
                                     <span className="font-bold text-sm text-text-main-light dark:text-text-main-dark">{brandName}</span>
                                 </div>
                                 {brandEvents.map(ev => {
-                                    const preview = ev.items.length > 0 ? stripForPreview(ev.items[0]) : "";
+                                    const preview = ev.items.length > 0 ? stripHtml(ev.items[0]) : "";
                                     return (
                                         <div key={ev.id} className="ml-4 p-2.5 rounded-lg border border-stone-100 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/30">
                                             <div className="flex items-center gap-1.5 mb-1">
@@ -138,7 +155,7 @@ function DayDetailPanel({ date, events, onClose }: { date: Date; events: Calenda
                                                     {ev.items.map((item, i) => (
                                                         <li key={i} className="text-xs text-stone-600 dark:text-stone-400 flex items-start gap-1.5 leading-relaxed">
                                                             <span className="text-stone-400 mt-0.5">•</span>
-                                                            <span>{stripForPreview(item)}</span>
+                                                            <span dangerouslySetInnerHTML={{ __html: formatLinksToIcons(item.replace(/<[^>]*>/g, "")) }} />
                                                         </li>
                                                     ))}
                                                 </ul>
