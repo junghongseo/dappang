@@ -109,7 +109,7 @@ export default async function PublicPage() {
             🍞 베이커리 소식
           </h2>
           <p className="text-sm text-text-sub-light dark:text-text-sub-dark">
-            AI가 분석한 최신 베이커리 소식을 확인하세요
+            다빵 AI가 분석한 최신 베이커리 소식을 확인하세요.(최신 게시글 순)
           </p>
         </div>
 
