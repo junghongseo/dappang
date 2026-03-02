@@ -38,7 +38,7 @@ export default function PublicRootLayout({
                     strategy="afterInteractive"
                 />
             </head>
-            <body className="font-sans antialiased">
+            <body className="font-sans antialiased overflow-x-hidden max-w-[100vw]">
                 <div className="min-h-screen flex flex-col">
                     {children}
                 </div>
