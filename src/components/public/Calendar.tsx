@@ -239,7 +239,7 @@ export function Calendar({ events }: CalendarProps) {
     const now = new Date();
     const [currentYear, setCurrentYear] = useState(now.getFullYear());
     const [currentMonth, setCurrentMonth] = useState(now.getMonth());
-    const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+    const [selectedDate, setSelectedDate] = useState<Date | null>(now);
     const monthScrollRef = useRef<HTMLDivElement>(null);
 
     const weeks = useMemo(() => getCalendarDays(currentYear, currentMonth), [currentYear, currentMonth]);

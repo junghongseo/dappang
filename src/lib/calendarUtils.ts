@@ -144,6 +144,10 @@ export function extractCalendarEvents(brands: BrandSummary[]): CalendarEvent[] {
 
                     if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) continue;
 
+                    // 월 전체에 해당하는 스케줄 제외 (20일 초과 기간인 경우)
+                    const durationDays = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
+                    if (durationDays > 20) continue;
+
                     events.push({
                         id: `${brand.id}-${block.type}-${dateEntry.start_date}`,
                         brandName: brand.bakery_name,
