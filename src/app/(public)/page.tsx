@@ -1,6 +1,7 @@
 import { fetchAiSummaries } from "@/app/actions/dashboard";
 import { PublicHeader } from "@/components/public/PublicHeader";
-import { BrandSection, BrandData } from "@/components/public/BrandSection";
+import { BrandSection } from "@/components/public/brand/BrandSection";
+import { BrandData } from "@/components/public/brand/sharedStyles";
 import { CalendarSection } from "@/components/public/CalendarSection";
 import { extractCalendarEvents } from "@/lib/calendarUtils";
 

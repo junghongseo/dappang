@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar } from "@/components/public/Calendar";
+import { Calendar } from "@/components/public/calendar/Calendar";
 import { CalendarEvent } from "@/lib/calendarUtils";
 
 interface CalendarSectionProps {

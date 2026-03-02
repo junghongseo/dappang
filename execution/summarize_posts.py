@@ -254,7 +254,7 @@ async def process_target(target, client, current_date_str):
 - 시작일만 있는 경우: end_date = start_date
 - type이 "info"인 일반 안내를 제외한 모든 블록(news, event, sale, holiday)에는 가능한 한 날짜를 추출하세요.
 - 날짜가 전혀 언급되지 않은 경우에만 이 필드를 생략할 수 있습니다.
-- ★중요★: 하나의 게시물에 오픈일(예: 3/1)과 출고일/배송일(예: 3/4~3/5)처럼 의미가 다른 날짜가 있으면, 각각 별도의 블록으로 분리하세요. 하나의 블록에는 하나의 날짜/기간만 포함하세요.
+- ★매우 중요★: 같은 구분(예: "holiday", "sale")에 해당하는 소식들은 날짜가 달라도 절대 여러 개의 블록으로 쪼개지 말고, 반드시 하나의 블록 안의 `items` 배열에 합쳐서 작성하세요. (예: 3월의 모든 휴무일은 하나의 "holiday" 블록 안의 items에 각각의 줄로 추가)
 
 ```json
 {{
@@ -373,8 +373,8 @@ async def summarize_posts_async():
     from datetime import timedelta
     one_hour_ago = (datetime.now(timezone.utc) - timedelta(hours=1)).isoformat()
     targets_response = supabase.table("target_accounts") \
-        .select("id, instagram_id") \
-        .eq("status", "active") \
+        .select("id, instagram_id, bakery_name") \
+        .eq("is_crawling", True) \
         .or_(f"last_scraped_at.is.null,last_scraped_at.lt.{one_hour_ago}") \
         .execute()
         
