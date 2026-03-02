@@ -1,5 +1,6 @@
 import os
 import json
+import re
 import asyncio
 from google import genai
 from datetime import datetime, timezone
@@ -24,6 +25,174 @@ if not supabase_url or not supabase_key:
     exit(1)
 
 supabase: Client = create_client(supabase_url, supabase_key)
+
+# ============================================
+# POST-PROCESS: Extract dates from text when AI omits them
+# ============================================
+
+def _strip_html(text):
+    """HTML 태그 제거 (예: <strong>3/4</strong> → 3/4)"""
+    return re.sub(r'<[^>]+>', '', text)
+
+def postprocess_dates(summary_obj, posts):
+    """AI가 start_date/end_date를 누락한 블록에 대해 items 텍스트에서 날짜를 추출하여 보완.
+    하나의 블록에 여러 날짜 이벤트(오픈일, 출고일 등)가 섞여 있으면 별도 블록으로 분할.
+    종료일만 있는 경우 해당 게시물의 published_at을 시작일로 사용."""
+    blocks = summary_obj.get("blocks", [])
+    
+    # Get the earliest post date as fallback start_date
+    fallback_start = None
+    for p in posts:
+        if p.get('published_at'):
+            try:
+                dt = datetime.fromisoformat(p['published_at'].replace('Z', '+00:00'))
+                if fallback_start is None or dt < fallback_start:
+                    fallback_start = dt
+            except Exception:
+                pass
+    
+    current_year = datetime.now().year
+    
+    def resolve_date(month, day, year=None):
+        y = int(year) if year else current_year
+        m = int(month)
+        d = int(day)
+        if m < 1 or m > 12 or d < 1 or d > 31:
+            return None
+        try:
+            return f"{y:04d}-{m:02d}-{d:02d}"
+        except Exception:
+            return None
+    
+    # === Regex patterns ===
+    _DOW = r'(?:\s*\([가-힣]\))?'
+    _SEP = r'[~\-–—]'
+
+    p_full_iso = re.compile(r'(\d{4})[-./](\d{1,2})[-./](\d{1,2})')
+    p_full_korean = re.compile(r'(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일')
+    p_range_slash = re.compile(r'(\d{1,2})[/.](\d{1,2})' + _DOW + r'\s*' + _SEP + r'\s*(\d{1,2})[/.](\d{1,2})' + _DOW)
+    p_range_korean = re.compile(r'(\d{1,2})월\s*(\d{1,2})일?' + _DOW + r'\s*' + _SEP + r'\s*(?:(\d{1,2})월\s*)?(\d{1,2})일?' + _DOW)
+    p_range_buteo = re.compile(r'(\d{1,2})[/.](\d{1,2})' + _DOW + r'?\s*부터\s*(\d{1,2})[/.](\d{1,2})' + _DOW + r'?\s*까지')
+    p_end_only = re.compile(r'[~]\s*(\d{1,2})[/.](\d{1,2})')
+    p_end_only_korean = re.compile(r'[~]\s*(\d{1,2})월\s*(\d{1,2})일?')
+    p_single_slash = re.compile(r'(\d{1,2})[/.](\d{1,2})' + _DOW)
+    p_single_korean = re.compile(r'(\d{1,2})월\s*(\d{1,2})일')
+    
+    def _extract_dates_from_text(text):
+        """텍스트에서 모든 날짜/범위를 추출. (start, end) 리스트 반환."""
+        clean = _strip_html(text)
+        dates = []
+        used = []  # (start_pos, end_pos) to avoid overlaps
+        
+        def overlaps(s, e):
+            return any(s < ue and e > us for us, ue in used)
+        
+        # Most specific patterns first
+        for m in p_full_iso.finditer(clean):
+            if not overlaps(m.start(), m.end()):
+                d = resolve_date(m.group(2), m.group(3), m.group(1))
+                if d:
+                    dates.append((d, d))
+                    used.append((m.start(), m.end()))
+        for m in p_full_korean.finditer(clean):
+            if not overlaps(m.start(), m.end()):
+                d = resolve_date(m.group(2), m.group(3), m.group(1))
+                if d:
+                    dates.append((d, d))
+                    used.append((m.start(), m.end()))
+        for m in p_range_buteo.finditer(clean):
+            if not overlaps(m.start(), m.end()):
+                sd, ed = resolve_date(m.group(1), m.group(2)), resolve_date(m.group(3), m.group(4))
+                if sd and ed:
+                    dates.append((sd, ed))
+                    used.append((m.start(), m.end()))
+        for m in p_range_slash.finditer(clean):
+            if not overlaps(m.start(), m.end()):
+                sd, ed = resolve_date(m.group(1), m.group(2)), resolve_date(m.group(3), m.group(4))
+                if sd and ed:
+                    dates.append((sd, ed))
+                    used.append((m.start(), m.end()))
+        for m in p_range_korean.finditer(clean):
+            if not overlaps(m.start(), m.end()):
+                sm, sd2 = m.group(1), m.group(2)
+                em = m.group(3) if m.group(3) else sm
+                ed2 = m.group(4)
+                sd, ed = resolve_date(sm, sd2), resolve_date(em, ed2)
+                if sd and ed:
+                    dates.append((sd, ed))
+                    used.append((m.start(), m.end()))
+        for pat in [p_end_only, p_end_only_korean]:
+            for m in pat.finditer(clean):
+                if not overlaps(m.start(), m.end()):
+                    ed = resolve_date(m.group(1), m.group(2))
+                    if ed:
+                        fb = fallback_start.strftime("%Y-%m-%d") if fallback_start else ed
+                        dates.append((fb, ed))
+                        used.append((m.start(), m.end()))
+        for m in p_single_slash.finditer(clean):
+            if not overlaps(m.start(), m.end()):
+                d = resolve_date(m.group(1), m.group(2))
+                if d:
+                    dates.append((d, d))
+                    used.append((m.start(), m.end()))
+        for m in p_single_korean.finditer(clean):
+            if not overlaps(m.start(), m.end()):
+                d = resolve_date(m.group(1), m.group(2))
+                if d:
+                    dates.append((d, d))
+                    used.append((m.start(), m.end()))
+        return dates
+    
+    def _first_date(text):
+        """첫 번째 날짜를 (start, end)로 반환. 없으면 None."""
+        dates = _extract_dates_from_text(text)
+        return dates[0] if dates else None
+    
+    # =============================================
+    # Main: item별 날짜 추출 → calendar_dates 배열로 저장
+    # 블록 자체는 분할하지 않음 (UI 카드 그룹핑 유지)
+    # =============================================
+    
+    for block in blocks:
+        if block.get('start_date') and block.get('end_date') and block.get('calendar_dates'):
+            continue  # 이미 완전히 처리됨
+        
+        items = block.get('items', [])
+        
+        # 모든 item에서 날짜 추출
+        all_dates = []  # [(start, end), ...]
+        
+        for item_text in items:
+            item_dates = _extract_dates_from_text(item_text)
+            all_dates.extend(item_dates)
+        
+        # title에서도 날짜 추출
+        if block.get('title'):
+            title_dates = _extract_dates_from_text(block['title'])
+            all_dates.extend(title_dates)
+        
+        # 중복 제거
+        unique_dates = list(dict.fromkeys(all_dates))
+        
+        if unique_dates:
+            # start_date/end_date: 전체 범위의 min/max (기본 캘린더 표시용)
+            if not block.get('start_date'):
+                block['start_date'] = min(d[0] for d in unique_dates)
+            if not block.get('end_date'):
+                block['end_date'] = max(d[1] for d in unique_dates)
+            
+            # calendar_dates: 개별 날짜 범위 목록 (캘린더에서 각각을 별도 이벤트로 표시)
+            if len(unique_dates) > 1:
+                block['calendar_dates'] = [
+                    {'start_date': sd, 'end_date': ed} for sd, ed in unique_dates
+                ]
+        elif block.get('start_date') and not block.get('end_date'):
+            block['end_date'] = block['start_date']
+    
+    return summary_obj
+
+
+
 
 async def process_target(target, client, current_date_str):
     target_id = target['id']
@@ -75,6 +244,18 @@ async def process_target(target, client, current_date_str):
 블록 타입은 "news", "event", "sale", "holiday", "info" 중 하나여야 합니다. 텍스트 내부의 강조 표시는 <strong> 태그를 사용해도 됩니다. 단, `excerpt` 필드의 문자열에는 <strong> 등 일체의 HTML 마크업을 허용하지 않으며 오직 순수 텍스트만 작성해야 합니다.
 ★가장 중요★: 각 항목(items)의 내용 끝에는 반드시 해당 원문의 실제 링크 주소를 [https://www.instagram.com/p/...] 형태로 붙여주세요. "게시물 링크"라는 글자 대신 실제 URL 주소를 넣어야 합니다.
 
+★★★ 캘린더 날짜 추출 (절대 생략 금지) ★★★
+이 시스템은 캘린더 앱과 연동되어 있습니다. 각 블록에서 날짜/기간이 언급된 경우 반드시 "start_date"와 "end_date"를 YYYY-MM-DD 형식으로 추가해야 합니다.
+날짜 추출 규칙:
+- 게시물에서 "3월 5일", "3/5", "2/28(토)~3/2(월)" 등 어떤 형태로든 날짜가 언급되면 반드시 추출하세요.
+- 하루짜리 이벤트: start_date = end_date (동일값)
+- 기간 이벤트: 시작일과 종료일을 각각 설정
+- 종료일만 있는 경우 (예: "~3/4까지"): start_date는 해당 게시물의 작성일로 설정하세요.
+- 시작일만 있는 경우: end_date = start_date
+- type이 "info"인 일반 안내를 제외한 모든 블록(news, event, sale, holiday)에는 가능한 한 날짜를 추출하세요.
+- 날짜가 전혀 언급되지 않은 경우에만 이 필드를 생략할 수 있습니다.
+- ★중요★: 하나의 게시물에 오픈일(예: 3/1)과 출고일/배송일(예: 3/4~3/5)처럼 의미가 다른 날짜가 있으면, 각각 별도의 블록으로 분리하세요. 하나의 블록에는 하나의 날짜/기간만 포함하세요.
+
 ```json
 {{
   "excerpt": "전체 포스트 내용을 아우르는 가장 핵심적인 한 줄 발췌 문장 (HTML 금지)",
@@ -84,7 +265,36 @@ async def process_target(target, client, current_date_str):
       "title": "신메뉴 소식",
       "items": [
         "시즌 한정 <strong>감 타르트</strong> 출시 [https://www.instagram.com/p/ABCDE12345/]"
-      ]
+      ],
+      "start_date": "2026-03-05",
+      "end_date": "2026-03-05"
+    }},
+    {{
+      "type": "event",
+      "title": "크루아상 축제",
+      "items": [
+        "3월 5일~7일 크루아상 20% 할인 [https://www.instagram.com/p/FGHIJ67890/]"
+      ],
+      "start_date": "2026-03-05",
+      "end_date": "2026-03-07"
+    }},
+    {{
+      "type": "holiday",
+      "title": "임시 휴무",
+      "items": [
+        "택배 출고 2/28(토)~3/2(월) 휴무 [https://www.instagram.com/p/XXXXX00000/]"
+      ],
+      "start_date": "2026-02-28",
+      "end_date": "2026-03-02"
+    }},
+    {{
+      "type": "sale",
+      "title": "댓글 이벤트",
+      "items": [
+        "최애 댓글 이벤트 ~3/4까지 진행 [https://www.instagram.com/p/YYYYY11111/]"
+      ],
+      "start_date": "2026-02-25",
+      "end_date": "2026-03-04"
     }}
   ]
 }}
@@ -112,6 +322,9 @@ async def process_target(target, client, current_date_str):
         
         # Log the parsed summary
         summary_json_obj = json.loads(ai_summary_raw)
+        
+        # 4.5. Post-process: extract missing dates from text
+        summary_json_obj = postprocess_dates(summary_json_obj, posts)
         
         # 5. Insert or Update AI Summary
         # Check if an existing summary exists for this target

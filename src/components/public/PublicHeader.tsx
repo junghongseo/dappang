@@ -4,7 +4,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-export function PublicHeader() {
+interface PublicHeaderProps {
+    lastUpdatedAt?: string;
+}
+
+export function PublicHeader({ lastUpdatedAt }: PublicHeaderProps) {
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -27,7 +31,15 @@ export function PublicHeader() {
                         </p>
                     </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 sm:gap-3">
+                    {/* 마지막 데이터 수집 시간 */}
+                    {mounted && lastUpdatedAt && (
+                        <div className="flex items-center gap-1 text-[10px] sm:text-xs text-text-sub-light dark:text-text-sub-dark bg-stone-100 dark:bg-stone-800 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-full border border-stone-200 dark:border-stone-700">
+                            <span className="material-symbols-outlined text-[14px] sm:text-[16px] text-green-500">sync</span>
+                            <span className="hidden sm:inline">마지막 수집</span>
+                            <span className="font-medium">{lastUpdatedAt}</span>
+                        </div>
+                    )}
                     <Link
                         href="/login"
                         className="flex items-center gap-1.5 text-xs sm:text-sm text-text-sub-light dark:text-text-sub-dark hover:text-primary dark:hover:text-amber-500 px-2.5 py-1.5 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"

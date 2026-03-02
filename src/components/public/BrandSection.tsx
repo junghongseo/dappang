@@ -17,6 +17,7 @@ export interface BrandData {
     instagram_id: string;
     shopping_mall_url: string | null;
     updated_at: string;
+    last_scraped_at?: string;
     blocks: BlockContent[];
     excerpt?: string;
 }
