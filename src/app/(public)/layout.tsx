@@ -38,8 +38,9 @@ export default function PublicRootLayout({
                     strategy="afterInteractive"
                 />
             </head>
-            <body className="font-sans antialiased overflow-x-hidden max-w-[100vw]">
-                <div className="min-h-screen flex flex-col">
+            <body className="font-sans antialiased">
+                {/* iOS Safari 전용: wrapper div로 viewport 폭 강제 제한 */}
+                <div className="w-screen overflow-x-hidden min-h-screen flex flex-col">
                     {children}
                 </div>
             </body>

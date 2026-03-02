@@ -290,7 +290,7 @@ export function BrandSection({ data }: { data: BrandData }) {
     if (data.blocks.length === 0) return null;
 
     return (
-        <section className="mb-10 sm:mb-14">
+        <section className="mb-10 sm:mb-14 overflow-hidden">
             {/* 브랜드 헤더 (3차+6차 개선: 인스타 커스텀 SVG 및 쇼핑몰 링크 적용) */}
             <div className="flex items-center mb-4 px-1">
                 <div className="flex items-center gap-3">
@@ -360,7 +360,7 @@ export function BrandSection({ data }: { data: BrandData }) {
             )}
 
             {/* 모바일: 가로 스크롤 갤러리 */}
-            <div className="md:hidden">
+            <div className="md:hidden overflow-hidden">
                 <div
                     ref={scrollRef}
                     className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-4 px-1 scrollbar-hide [-webkit-overflow-scrolling:touch]"
