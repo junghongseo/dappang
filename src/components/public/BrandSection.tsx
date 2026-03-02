@@ -170,7 +170,7 @@ function GalleryCard({ block, onClick }: { block: BlockContent, onClick: () => v
     return (
         <button
             onClick={onClick}
-            className={`flex-shrink-0 w-44 h-44 sm:w-48 sm:h-48 snap-start rounded-[20px] border ${style.border} ${style.bg} p-5 flex flex-col items-center justify-center text-center cursor-pointer hover:-translate-y-1 transition-transform relative group text-left shadow-sm`}
+            className={`flex-shrink-0 w-[65vw] sm:w-48 min-h-[160px] sm:h-48 snap-start rounded-[20px] border ${style.border} ${style.bg} p-4 sm:p-5 flex flex-col items-center justify-center text-center cursor-pointer hover:-translate-y-1 transition-transform relative group text-left shadow-sm`}
         >
             <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full mb-3 flex items-center justify-center ${style.accent}`}>
                 <span className={`material-symbols-outlined text-3xl sm:text-4xl ${style.text}`}>
@@ -362,10 +362,10 @@ export function BrandSection({ data }: { data: BrandData }) {
             )}
 
             {/* 모바일: 가로 스크롤 갤러리 */}
-            <div className="md:hidden w-[100vw] relative left-1/2 -ml-[50vw]">
+            <div className="md:hidden">
                 <div
                     ref={scrollRef}
-                    className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-5 px-4 scrollbar-hide [-webkit-overflow-scrolling:touch]"
+                    className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-5 px-1 scrollbar-hide [-webkit-overflow-scrolling:touch]"
                 >
                     {data.blocks.map((block, idx) => (
                         <GalleryCard key={idx} block={block} onClick={() => setSelectedBlock(block)} />

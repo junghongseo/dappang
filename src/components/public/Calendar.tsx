@@ -359,9 +359,9 @@ export function Calendar({ events }: CalendarProps) {
     };
 
     return (
-        <div className="bg-surface-light dark:bg-surface-dark rounded-2xl shadow-sm border border-stone-200 dark:border-stone-700 overflow-hidden">
+        <div className="bg-surface-light dark:bg-surface-dark rounded-2xl shadow-sm border border-stone-200 dark:border-stone-700 overflow-hidden w-full max-w-full">
             {/* Year navigation */}
-            <div className="flex items-center justify-center gap-4 pt-3 sm:pt-4 pb-1.5 sm:pb-2 px-4">
+            <div className="flex items-center justify-center gap-3 pt-3 sm:pt-4 pb-1.5 sm:pb-2 px-3 sm:px-4">
                 <button
                     onClick={() => handleYearNav(-1)}
                     className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
@@ -380,15 +380,15 @@ export function Calendar({ events }: CalendarProps) {
             </div>
 
             {/* Month tabs */}
-            <div className="px-2 sm:px-3 pb-2 sm:pb-3 overflow-x-auto scrollbar-hide">
-                <div className="flex gap-1 sm:gap-1.5 min-w-max px-1">
+            <div className="px-2 sm:px-3 pb-2 sm:pb-3">
+                <div className="grid grid-cols-6 sm:flex sm:flex-nowrap gap-1 sm:gap-1.5 sm:overflow-x-auto sm:scrollbar-hide sm:min-w-max px-1">
                     {MONTH_NAMES.map((name, i) => {
                         const isActive = i === currentMonth;
                         return (
                             <button
                                 key={i}
                                 onClick={() => handleMonthChange(i)}
-                                className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all whitespace-nowrap ${isActive
+                                className={`px-1 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all whitespace-nowrap ${isActive
                                     ? "bg-primary text-white shadow-sm"
                                     : "text-stone-500 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800"
                                     }`}
