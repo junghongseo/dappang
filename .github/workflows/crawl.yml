@@ -3,13 +3,14 @@ name: Crawl Instagram & Summarize
 on:
   workflow_dispatch:
   schedule:
-    # KST 06:00, 09:00, 12:00, 15:00, 18:00, 21:00 (UTC = KST - 9)
-    - cron: '0 21 * * *'   # KST 06:00 (전날 UTC 21:00)
-    - cron: '0 0 * * *'    # KST 09:00
-    - cron: '0 3 * * *'    # KST 12:00
-    - cron: '0 6 * * *'    # KST 15:00
-    - cron: '0 9 * * *'    # KST 18:00
-    - cron: '0 12 * * *'   # KST 21:00
+    # KST 06:00, 09:00, 12:00, 15:00, 18:00, 21:00 (원래 기준시각)
+    # GitHub Actions 대기열 지연 보정을 위해 각 시간보다 40분 일찍(XX:20) 실행하도록 당김.
+    - cron: '20 20 * * *'  # KST 05:20 (전날 UTC 20:20)
+    - cron: '20 23 * * *'  # KST 08:20 (전날 UTC 23:20)
+    - cron: '20 2 * * *'   # KST 11:20 (UTC 02:20)
+    - cron: '20 5 * * *'   # KST 14:20 (UTC 05:20)
+    - cron: '20 8 * * *'   # KST 17:20 (UTC 08:20)
+    - cron: '20 11 * * *'  # KST 20:20 (UTC 11:20)
 
 jobs:
   crawl:
