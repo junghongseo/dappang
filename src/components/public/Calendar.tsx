@@ -23,89 +23,14 @@ interface CalendarProps {
 }
 
 // ============================================
-// Multi-day event bar positioning logic
-// ============================================
-
-interface EventBarSegment {
-    event: CalendarEvent;
-    startCol: number;
-    spanCols: number;
-    row: number;
-}
-
-function getEventBarsForWeek(
-    weekDates: Date[],
-    events: CalendarEvent[],
-): EventBarSegment[] {
-    const bars: EventBarSegment[] = [];
-
-    const weekStart = new Date(weekDates[0].getFullYear(), weekDates[0].getMonth(), weekDates[0].getDate()).getTime();
-    const weekEnd = new Date(weekDates[6].getFullYear(), weekDates[6].getMonth(), weekDates[6].getDate()).getTime();
-
-    const relevantEvents = events.filter(ev => {
-        const evStart = new Date(ev.startDate.getFullYear(), ev.startDate.getMonth(), ev.startDate.getDate()).getTime();
-        const evEnd = new Date(ev.endDate.getFullYear(), ev.endDate.getMonth(), ev.endDate.getDate()).getTime();
-        return evEnd >= weekStart && evStart <= weekEnd;
-    });
-
-    relevantEvents.sort((a, b) => {
-        const aDuration = a.endDate.getTime() - a.startDate.getTime();
-        const bDuration = b.endDate.getTime() - b.startDate.getTime();
-        if (bDuration !== aDuration) return bDuration - aDuration;
-        return a.startDate.getTime() - b.startDate.getTime();
-    });
-
-    const usedSlots: boolean[][] = weekDates.map(() => []);
-
-    for (const event of relevantEvents) {
-        const evStart = new Date(event.startDate.getFullYear(), event.startDate.getMonth(), event.startDate.getDate()).getTime();
-        const evEnd = new Date(event.endDate.getFullYear(), event.endDate.getMonth(), event.endDate.getDate()).getTime();
-
-        const startCol = Math.max(0, weekDates.findIndex(d =>
-            new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime() >= evStart
-        ));
-
-        let endCol = 6;
-        for (let i = 6; i >= 0; i--) {
-            if (new Date(weekDates[i].getFullYear(), weekDates[i].getMonth(), weekDates[i].getDate()).getTime() <= evEnd) {
-                endCol = i;
-                break;
-            }
-        }
-        if (startCol > endCol) continue;
-
-        let slot = 0;
-        while (slot <= 3) {
-            let available = true;
-            for (let col = startCol; col <= endCol; col++) {
-                if (usedSlots[col][slot]) { available = false; break; }
-            }
-            if (available) break;
-            slot++;
-        }
-        if (slot > 3) continue;
-
-        for (let col = startCol; col <= endCol; col++) {
-            while (usedSlots[col].length <= slot) usedSlots[col].push(false);
-            usedSlots[col][slot] = true;
-        }
-
-        bars.push({ event, startCol, spanCols: endCol - startCol + 1, row: slot });
-    }
-    return bars;
-}
-
-
-// ============================================
 // Helper
 // ============================================
 function stripForPreview(text: string): string {
     return text.replace(/<[^>]*>/g, "").replace(/\[?https?:\/\/[^\s<\]\)]+\]?/g, "").replace(/\s+/g, " ").trim();
 }
 
-
 // ============================================
-// Event Detail Modal
+// Event Detail Modal (모바일 더보기 클릭 시)
 // ============================================
 function EventDetailModal({ event, onClose }: { event: CalendarEvent; onClose: () => void }) {
     const typeStyles: Record<string, { bg: string; text: string; icon: string }> = {
@@ -118,8 +43,8 @@ function EventDetailModal({ event, onClose }: { event: CalendarEvent; onClose: (
     const s = typeStyles[event.type] || typeStyles.info;
 
     return createPortal(
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose}>
-            <div className="w-full sm:max-w-md bg-surface-light dark:bg-surface-dark rounded-t-2xl sm:rounded-2xl shadow-2xl border border-stone-200 dark:border-stone-700 overflow-hidden animate-in slide-in-from-bottom duration-300 max-h-[85vh] flex flex-col" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm" onClick={onClose}>
+            <div className="w-full sm:max-w-md bg-surface-light dark:bg-surface-dark rounded-t-2xl sm:rounded-2xl shadow-2xl border border-stone-200 dark:border-stone-700 overflow-hidden max-h-[85vh] flex flex-col" onClick={e => e.stopPropagation()}>
                 <div className={`p-4 border-b border-stone-100 dark:border-stone-800 flex justify-between items-center ${s.bg}`}>
                     <div className="flex items-center gap-3 min-w-0">
                         <div className="w-10 h-10 rounded-full flex items-center justify-center bg-white/50 dark:bg-black/10 flex-shrink-0">
@@ -154,9 +79,8 @@ function EventDetailModal({ event, onClose }: { event: CalendarEvent; onClose: (
     );
 }
 
-
 // ============================================
-// Day Detail Panel
+// Day Detail Panel (날짜 클릭 시 하단 표시)
 // ============================================
 function DayDetailPanel({ date, events, onClose }: { date: Date; events: CalendarEvent[]; onClose: () => void }) {
     const [detailEvent, setDetailEvent] = useState<CalendarEvent | null>(null);
@@ -232,6 +156,64 @@ function DayDetailPanel({ date, events, onClose }: { date: Date; events: Calenda
     );
 }
 
+// ============================================
+// Desktop: Event bar positioning (PC 전용)
+// ============================================
+interface EventBarSegment {
+    event: CalendarEvent;
+    startCol: number;
+    spanCols: number;
+    row: number;
+}
+
+function getEventBarsForWeek(weekDates: Date[], events: CalendarEvent[]): EventBarSegment[] {
+    const bars: EventBarSegment[] = [];
+    const weekStart = new Date(weekDates[0].getFullYear(), weekDates[0].getMonth(), weekDates[0].getDate()).getTime();
+    const weekEnd = new Date(weekDates[6].getFullYear(), weekDates[6].getMonth(), weekDates[6].getDate()).getTime();
+
+    const relevantEvents = events.filter(ev => {
+        const s = new Date(ev.startDate.getFullYear(), ev.startDate.getMonth(), ev.startDate.getDate()).getTime();
+        const e = new Date(ev.endDate.getFullYear(), ev.endDate.getMonth(), ev.endDate.getDate()).getTime();
+        return e >= weekStart && s <= weekEnd;
+    });
+
+    relevantEvents.sort((a, b) => {
+        const ad = a.endDate.getTime() - a.startDate.getTime();
+        const bd = b.endDate.getTime() - b.startDate.getTime();
+        return bd !== ad ? bd - ad : a.startDate.getTime() - b.startDate.getTime();
+    });
+
+    const usedSlots: boolean[][] = weekDates.map(() => []);
+
+    for (const event of relevantEvents) {
+        const evS = new Date(event.startDate.getFullYear(), event.startDate.getMonth(), event.startDate.getDate()).getTime();
+        const evE = new Date(event.endDate.getFullYear(), event.endDate.getMonth(), event.endDate.getDate()).getTime();
+
+        const startCol = Math.max(0, weekDates.findIndex(d => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime() >= evS));
+        let endCol = 6;
+        for (let i = 6; i >= 0; i--) {
+            if (new Date(weekDates[i].getFullYear(), weekDates[i].getMonth(), weekDates[i].getDate()).getTime() <= evE) { endCol = i; break; }
+        }
+        if (startCol > endCol) continue;
+
+        let slot = 0;
+        while (slot <= 3) {
+            let ok = true;
+            for (let c = startCol; c <= endCol; c++) if (usedSlots[c][slot]) { ok = false; break; }
+            if (ok) break;
+            slot++;
+        }
+        if (slot > 3) continue;
+
+        for (let c = startCol; c <= endCol; c++) {
+            while (usedSlots[c].length <= slot) usedSlots[c].push(false);
+            usedSlots[c][slot] = true;
+        }
+        bars.push({ event, startCol, spanCols: endCol - startCol + 1, row: slot });
+    }
+    return bars;
+}
+
 
 // ============================================
 // Main Calendar Component
@@ -249,66 +231,78 @@ export function Calendar({ events }: CalendarProps) {
         return getEventsForDate(events, selectedDate);
     }, [selectedDate, events]);
 
-    // 월 탭 스크롤 시 연도 전환
-    const allMonths = useMemo(() => {
-        const result = [];
-        for (let y = currentYear - 1; y <= currentYear + 1; y++) {
-            for (let m = 0; m < 12; m++) {
-                result.push({ year: y, month: m, label: `${m + 1}월` });
-            }
-        }
-        return result;
-    }, [currentYear]);
-
-    // 초기 스크롤 위치 설정 (현재 월이 보이도록)
+    // 월 버튼 스크롤 → 현재 월 중앙으로
     useEffect(() => {
         if (monthScrollRef.current) {
             const activeBtn = monthScrollRef.current.querySelector('[data-active="true"]') as HTMLElement;
             if (activeBtn) {
-                activeBtn.scrollIntoView({ inline: "center", block: "nearest" });
+                const container = monthScrollRef.current;
+                const scrollLeft = activeBtn.offsetLeft - container.clientWidth / 2 + activeBtn.clientWidth / 2;
+                container.scrollTo({ left: scrollLeft, behavior: "smooth" });
             }
         }
-    }, [currentYear]);
+    }, [currentMonth]);
 
-    const handleMonthSelect = (year: number, month: number) => {
-        setCurrentYear(year);
+    const handleMonthSelect = (month: number) => {
         setCurrentMonth(month);
         setSelectedDate(null);
     };
 
-    return (
-        <div className="bg-surface-light dark:bg-surface-dark rounded-2xl shadow-sm border border-stone-200 dark:border-stone-700 overflow-hidden w-full">
+    const handleYearNav = (delta: number) => {
+        setCurrentYear(y => y + delta);
+        setSelectedDate(null);
+    };
 
-            {/* ====== 월 선택 탭 (한 줄 가로 스크롤) ====== */}
+    return (
+        <div className="bg-surface-light dark:bg-surface-dark rounded-2xl shadow-sm border border-stone-200 dark:border-stone-700 overflow-hidden">
+
+            {/* ====== 상단: 현재 월 크게 표시 + 연도 네비게이션 ====== */}
+            <div className="flex items-center justify-between px-4 pt-4 pb-2">
+                <h2 className="font-display text-2xl sm:text-3xl font-bold text-text-main-light dark:text-text-main-dark">
+                    {currentYear}년 {currentMonth + 1}월
+                </h2>
+                <div className="flex items-center gap-1">
+                    <button
+                        onClick={() => handleYearNav(-1)}
+                        className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+                    >
+                        <span className="material-symbols-outlined text-stone-500 text-lg">chevron_left</span>
+                    </button>
+                    <button
+                        onClick={() => handleYearNav(1)}
+                        className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+                    >
+                        <span className="material-symbols-outlined text-stone-500 text-lg">chevron_right</span>
+                    </button>
+                </div>
+            </div>
+
+            {/* ====== 월 선택 버튼 (가로 스크롤, 구글 캘린더 스타일) ====== */}
             <div
                 ref={monthScrollRef}
-                className="flex overflow-x-auto scrollbar-hide border-b border-stone-200 dark:border-stone-700 [-webkit-overflow-scrolling:touch]"
+                className="flex overflow-x-auto scrollbar-hide px-3 pb-3 gap-2 [-webkit-overflow-scrolling:touch]"
             >
-                {allMonths.map(({ year, month, label }) => {
-                    const isActive = year === currentYear && month === currentMonth;
-                    const isJan = month === 0;
+                {MONTH_NAMES.map((name, i) => {
+                    const isActive = i === currentMonth;
                     return (
                         <button
-                            key={`${year}-${month}`}
+                            key={i}
                             data-active={isActive ? "true" : "false"}
-                            onClick={() => handleMonthSelect(year, month)}
-                            className={`flex-shrink-0 px-4 py-2.5 text-sm font-bold transition-all relative whitespace-nowrap
-                                ${isJan ? "border-l border-stone-200 dark:border-stone-700" : ""}
+                            onClick={() => handleMonthSelect(i)}
+                            className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-bold transition-all border
                                 ${isActive
-                                    ? "text-primary dark:text-amber-500"
-                                    : "text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300"
+                                    ? "bg-primary text-white border-primary shadow-sm"
+                                    : "bg-transparent text-stone-500 dark:text-stone-400 border-stone-200 dark:border-stone-700 hover:bg-stone-100 dark:hover:bg-stone-800"
                                 }`}
                         >
-                            {isJan && <span className="text-[10px] text-stone-400 dark:text-stone-500 block leading-none mb-0.5">{year}</span>}
-                            {label}
-                            {isActive && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-[3px] bg-primary dark:bg-amber-500 rounded-full" />}
+                            {name}
                         </button>
                     );
                 })}
             </div>
 
             {/* ====== 요일 헤더 ====== */}
-            <div className="grid grid-cols-7">
+            <div className="grid grid-cols-7 border-t border-stone-200 dark:border-stone-700">
                 {DAY_NAMES.map((day, i) => (
                     <div key={day} className={`text-center text-xs font-bold py-2
                         ${i === 0 ? "text-red-400" : i === 6 ? "text-blue-400" : "text-stone-400 dark:text-stone-500"}`}>
@@ -324,7 +318,7 @@ export function Calendar({ events }: CalendarProps) {
 
                     return (
                         <div key={weekIdx} className="relative">
-                            {/* 날짜 번호 + 이벤트 도트 */}
+                            {/* 날짜 셀 */}
                             <div className="grid grid-cols-7 border-b border-stone-100 dark:border-stone-800">
                                 {week.map((date, dayIdx) => {
                                     const isThisMonth = date.getMonth() === currentMonth;
@@ -339,14 +333,14 @@ export function Calendar({ events }: CalendarProps) {
                                         <button
                                             key={dayIdx}
                                             onClick={() => setSelectedDate(isSelected ? null : date)}
-                                            className={`relative p-1 transition-colors
-                                                min-h-[52px] sm:min-h-[100px]
+                                            className={`relative p-1 transition-colors text-center
+                                                min-h-[56px] sm:min-h-[100px]
                                                 ${dayIdx < 6 ? "border-r border-stone-100 dark:border-stone-800" : ""}
                                                 ${isSelected ? "bg-primary/5 dark:bg-primary/10" : "hover:bg-stone-50 dark:hover:bg-stone-800/50"}`}
                                         >
-                                            {/* 날짜 숫자 — 상단에 고정 */}
+                                            {/* 날짜 숫자 */}
                                             <div className="flex items-center justify-center">
-                                                <span className={`text-sm sm:text-sm font-medium w-7 h-7 flex items-center justify-center rounded-full
+                                                <span className={`text-sm font-medium w-7 h-7 flex items-center justify-center rounded-full
                                                     ${isTodayDate
                                                         ? "bg-primary text-white font-bold"
                                                         : isThisMonth
@@ -363,7 +357,7 @@ export function Calendar({ events }: CalendarProps) {
                                                     {dayEvents.slice(0, 3).map((ev, i) => (
                                                         <div key={i} className="w-[6px] h-[6px] rounded-full" style={{ backgroundColor: ev.color }} />
                                                     ))}
-                                                    {dayEvents.length > 3 && <span className="text-[8px] text-stone-400 leading-none">+</span>}
+                                                    {dayEvents.length > 3 && <span className="text-[8px] text-stone-400">+</span>}
                                                 </div>
                                             )}
                                         </button>
@@ -375,15 +369,15 @@ export function Calendar({ events }: CalendarProps) {
                             {eventBars.length > 0 && (
                                 <div className="hidden sm:block absolute left-0 right-0 pointer-events-none" style={{ top: "32px" }}>
                                     {eventBars.map((bar, idx) => {
-                                        const leftPercent = (bar.startCol / 7) * 100;
-                                        const widthPercent = (bar.spanCols / 7) * 100;
+                                        const leftPct = (bar.startCol / 7) * 100;
+                                        const widthPct = (bar.spanCols / 7) * 100;
                                         return (
                                             <div
                                                 key={idx}
                                                 className="absolute text-[10px] font-bold text-white rounded-sm px-1.5 py-0.5 truncate leading-tight shadow-sm"
                                                 style={{
-                                                    left: `calc(${leftPercent}% + 2px)`,
-                                                    width: `calc(${widthPercent}% - 4px)`,
+                                                    left: `calc(${leftPct}% + 2px)`,
+                                                    width: `calc(${widthPct}% - 4px)`,
                                                     top: `${bar.row * 20}px`,
                                                     backgroundColor: bar.event.color,
                                                 }}
@@ -402,7 +396,7 @@ export function Calendar({ events }: CalendarProps) {
 
             {/* ====== 브랜드 범례 ====== */}
             {events.length > 0 && (
-                <div className="px-3 py-2.5 border-t border-stone-100 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/30 overflow-x-auto scrollbar-hide">
+                <div className="px-3 py-2.5 border-t border-stone-100 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/30 overflow-x-auto scrollbar-hide [-webkit-overflow-scrolling:touch]">
                     <div className="flex gap-3 min-w-max">
                         {Array.from(new Set(events.map(e => e.brandName))).map(brand => {
                             const color = events.find(e => e.brandName === brand)?.color || "#888";
