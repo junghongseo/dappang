@@ -254,7 +254,7 @@ export function Calendar({ events }: CalendarProps) {
     };
 
     return (
-        <div className="bg-surface-light dark:bg-surface-dark rounded-2xl shadow-sm border border-stone-200 dark:border-stone-700 overflow-hidden">
+        <div className="bg-surface-light dark:bg-surface-dark rounded-2xl shadow-sm border border-stone-200 dark:border-stone-700 overflow-hidden w-full">
 
             {/* ====== 상단: 현재 월 크게 표시 + 연도 네비게이션 ====== */}
             <div className="flex items-center justify-between px-4 pt-4 pb-2">
@@ -396,8 +396,8 @@ export function Calendar({ events }: CalendarProps) {
 
             {/* ====== 브랜드 범례 ====== */}
             {events.length > 0 && (
-                <div className="px-3 py-2.5 border-t border-stone-100 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/30 overflow-x-auto scrollbar-hide [-webkit-overflow-scrolling:touch]">
-                    <div className="flex gap-3 min-w-max">
+                <div className="px-3 py-2.5 border-t border-stone-100 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/30 overflow-hidden">
+                    <div className="flex gap-3 overflow-x-auto scrollbar-hide [-webkit-overflow-scrolling:touch] pb-0.5">
                         {Array.from(new Set(events.map(e => e.brandName))).map(brand => {
                             const color = events.find(e => e.brandName === brand)?.color || "#888";
                             return (
