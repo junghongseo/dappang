@@ -374,7 +374,7 @@ async def summarize_posts_async():
     one_hour_ago = (datetime.now(timezone.utc) - timedelta(hours=1)).isoformat()
     targets_response = supabase.table("target_accounts") \
         .select("id, instagram_id, bakery_name") \
-        .eq("is_crawling", True) \
+        .eq("status", "active") \
         .or_(f"last_scraped_at.is.null,last_scraped_at.lt.{one_hour_ago}") \
         .execute()
         
